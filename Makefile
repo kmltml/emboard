@@ -234,3 +234,7 @@ clean:
 -include $(wildcard $(BUILD_DIR)/*.d)
 
 # *** EOF ***
+
+# Extra targets
+program: all
+	openocd -f board/stm32f7discovery.cfg -c "program build/emboard.elf verify reset exit"
