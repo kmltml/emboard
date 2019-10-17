@@ -47,7 +47,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "FreeRTOS.h" 
+#include "FreeRTOS.h"
 #include "task.h"
 
 /* USER CODE BEGIN Includes */     

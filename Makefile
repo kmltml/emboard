@@ -37,6 +37,7 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Src/main.c \
+Src/app.c \
 Src/bsp_driver_sd.c \
 Src/sd_diskio.c \
 Src/fatfs.c \
@@ -51,7 +52,6 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
-Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_eth.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c \
@@ -82,6 +82,12 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c \
+Drivers/BSP/STM32746G-Discovery/stm32746g_discovery.c \
+Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_lcd.c \
+Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_ts.c \
+Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_audio.c \
+Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_sdram.c \
+Drivers/BSP/Components/ft5336/ft5336.c \
 Src/system_stm32f7xx.c \
 Middlewares/Third_Party/FatFs/src/option/syscall.c \
 Middlewares/Third_Party/FatFs/src/ff.c \
@@ -161,7 +167,8 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/FatFs/src \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-IDrivers/BSP/STM32746G-Discovery
 
 
 # compile gcc flags
@@ -237,4 +244,4 @@ clean:
 
 # Extra targets
 program: all
-	openocd -f board/stm32f7discovery.cfg -c "program build/emboard.elf verify reset exit"
+	openocd -f board/stm32f7discovery.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
