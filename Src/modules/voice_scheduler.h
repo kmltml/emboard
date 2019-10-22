@@ -15,9 +15,9 @@ typedef struct {
   uint16_t samples[VOICE_BUFFER_SIZE];
 } voice_entry;
 
-voice_entry voice_table[VOICE_COUNT];
+extern voice_entry voice_table[VOICE_COUNT];
 
-SemaphoreHandle_t voice_table_lock;
+extern SemaphoreHandle_t voice_table_lock;
 
 void voice_scheduler_init();
 

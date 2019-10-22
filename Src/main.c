@@ -56,6 +56,10 @@
 #include "app.h"
 #include  <errno.h>
 #include  <sys/unistd.h>
+#include "modules/note_source.h"
+#include "modules/gui.h"
+#include "modules/synthesizer.h"
+#include "modules/voice_scheduler.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -224,7 +228,10 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  note_source_init();
+  gui_init();
+  synthesizer_init();
+  voice_scheduler_init();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -246,7 +253,12 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  xTaskCreate(mainTask, NULL, 1024, NULL, 2, NULL );
+  xTaskCreate(mainTask, NULL, 256, NULL, 2, NULL );
+
+  xTaskCreate(voice_scheduler_task, "SCHED", 256, NULL, 2, NULL);
+  xTaskCreate(gui_task, "GUI", 256, NULL, 2, NULL);
+  xTaskCreate(note_source_task, "NOTE_SRC", 256, NULL, 2, NULL);
+  xTaskCreate(synthesizer_task, "SYNTH", 256, NULL, 2, NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -1523,6 +1535,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void _Error_Handler(char *file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  printf("Error at %s:%d\n", file, line);
   /* User can add his own implementation to report the HAL error return state */
   while(1)
   {

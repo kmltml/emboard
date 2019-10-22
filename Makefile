@@ -41,6 +41,8 @@ Src/app.c \
 Src/modules/note_source.c \
 Src/modules/synthesizer.c \
 Src/modules/voice_scheduler.c \
+Src/modules/gui.c \
+Src/modules/oscillator.c \
 Src/bsp_driver_sd.c \
 Src/sd_diskio.c \
 Src/fatfs.c \
@@ -248,3 +250,6 @@ clean:
 # Extra targets
 program: all
 	openocd -f board/stm32f7discovery.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+
+debug:
+	openocd -f board/stm32f7discovery.cfg

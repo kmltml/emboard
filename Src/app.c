@@ -32,5 +32,6 @@ void mainTask(void* _) {
     for(size_t i = 0; i < 100; i++) {
       lcd_image_fg[i][50] = 0xff000000;
     }
+    osDelay(1000);
   }
 }

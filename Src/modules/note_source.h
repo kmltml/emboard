@@ -13,7 +13,7 @@ typedef struct {
 } note_event;
 
 
-QueueHandle_t note_events;
+extern QueueHandle_t note_events;
 
 
 void note_source_init();
