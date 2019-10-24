@@ -3,12 +3,16 @@
 #include <stdio.h>
 
 #include "note_source.h"
+#include "oscillator.h"
 
 voice_entry voice_table[VOICE_COUNT];
 SemaphoreHandle_t voice_table_lock;
 
 void voice_scheduler_init() {
-  // TODO
+  voice_table_lock = xSemaphoreCreateMutex();
+  for(size_t i = 0; i < VOICE_COUNT; i++) {
+    voice_table[i].active = 0;
+  }
 }
 
 void voice_scheduler_task(void* args) {
@@ -17,7 +21,21 @@ void voice_scheduler_task(void* args) {
     BaseType_t recv = xQueueReceive(note_events, &ev, portMAX_DELAY);
     if (recv == pdTRUE) {
       printf("[SCHED] %s %d\n", ev.type == NE_DOWN ? "DOWN" : "UP", ev.pitch);
-      // TODO insert into voice table
+
+      while(xSemaphoreTake(voice_table_lock, portMAX_DELAY) == pdFALSE);
+
+      switch (ev.type) {
+      case NE_DOWN:
+        voice_table[0].active = true;
+        oscillator_reset(&voice_table[0]);
+        voice_table[0].note = ev.pitch;
+        break;
+      case NE_UP:
+        voice_table[0].active = false;
+        break;
+      }
+
+      xSemaphoreGive(voice_table_lock);
     }
   }
 }

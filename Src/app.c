@@ -27,6 +27,7 @@ void lcd_init(void) {
 void mainTask(void* _) {
   lcd_init();
   while(true) {
+    BSP_LCD_Clear(0xffff00ff);
     BSP_LCD_SetTextColor(0xff00ff00);
     BSP_LCD_DrawRect(10, 10, 20, 20);
     for(size_t i = 0; i < 100; i++) {

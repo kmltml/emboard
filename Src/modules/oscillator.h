@@ -1,11 +1,9 @@
 #pragma once
 
-#include "voice_scheduler.h"
+#include <stdint.h>
 
-typedef struct {
-  float shape;
-  float amplitude;
-  float tune;
-} oscillator_settings;
+#include "structures.h"
+
+void oscillator_reset(voice_entry* voice);
 
 void oscillator_generate(voice_entry* voice);

@@ -253,12 +253,12 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  xTaskCreate(mainTask, NULL, 256, NULL, 2, NULL );
+  xTaskCreate(mainTask, NULL, 256, NULL, 2, NULL);
 
   xTaskCreate(voice_scheduler_task, "SCHED", 256, NULL, 2, NULL);
   xTaskCreate(gui_task, "GUI", 256, NULL, 2, NULL);
   xTaskCreate(note_source_task, "NOTE_SRC", 256, NULL, 2, NULL);
-  xTaskCreate(synthesizer_task, "SYNTH", 256, NULL, 2, NULL);
+  xTaskCreate(synthesizer_task, "SYNTH", 256, NULL, 2, &synthesizer_task_handle);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */

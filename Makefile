@@ -93,6 +93,7 @@ Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_ts.c \
 Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_audio.c \
 Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_sdram.c \
 Drivers/BSP/Components/ft5336/ft5336.c \
+Drivers/BSP/Components/wm8994/wm8994.c \
 Src/system_stm32f7xx.c \
 Middlewares/Third_Party/FatFs/src/option/syscall.c \
 Middlewares/Third_Party/FatFs/src/ff.c \
