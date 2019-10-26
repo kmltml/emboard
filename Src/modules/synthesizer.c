@@ -12,7 +12,7 @@ typedef enum {
 buffer_half buffer_position = BH_LOW;
 
 // For each sample we need one word for each channel
-int16_t audio_out_buffer[AUDIO_OUT_BUFFER_SIZE * 2];
+int16_t audio_out_buffer[AUDIO_OUT_BUFFER_SIZE * 4];
 
 TaskHandle_t synthesizer_task_handle;
 
@@ -42,7 +42,7 @@ void synthesizer_init() {
     printf("[INIT] Audio init error: %d\n", init_res);
   }
   BSP_AUDIO_OUT_SetAudioFrameSlot(CODEC_AUDIOFRAME_SLOT_02);
-  BSP_AUDIO_OUT_ChangeBuffer((uint16_t*) audio_out_buffer, AUDIO_OUT_BUFFER_SIZE);
+  BSP_AUDIO_OUT_ChangeBuffer((uint16_t*) audio_out_buffer, sizeof(audio_out_buffer) / sizeof(uint32_t));
 }
 
 void synthesize(voice_entry* voice) {
@@ -50,14 +50,14 @@ void synthesize(voice_entry* voice) {
 }
 
 void mix(int16_t* out_buffer) {
-  for(size_t i = 0; i < AUDIO_OUT_BUFFER_SIZE; i++) {
+  for(size_t i = 0; i < AUDIO_OUT_BUFFER_SIZE * 2; i++) {
     out_buffer[i] = 0;
   }
   for(size_t voice = 0; voice < VOICE_COUNT; voice++) {
     if (voice_table[voice].active) {
       for(size_t i = 0; i < VOICE_BUFFER_SIZE; i++) {
         // Samples for the right channel seem to be ignored
-        out_buffer[i * 2] += voice_table[voice].samples[i];
+        out_buffer[i * 4] += voice_table[voice].samples[i];
       }
     }
   }
@@ -70,7 +70,7 @@ void synthesizer_task(void* args) {
     if (buffer_position == BH_HIGH) {
       // in the sample project this is not necessary, but for some reason
       // playback stops immediately when this is not present
-      BSP_AUDIO_OUT_ChangeBuffer((uint16_t*) audio_out_buffer, AUDIO_OUT_BUFFER_SIZE);
+      BSP_AUDIO_OUT_ChangeBuffer((uint16_t*) audio_out_buffer, sizeof(audio_out_buffer) / sizeof(uint32_t));
     }
 
     for(size_t i = 0; i < VOICE_COUNT; i++) {
@@ -80,6 +80,6 @@ void synthesizer_task(void* args) {
     }
     mix(buffer_position == BH_LOW
         ? audio_out_buffer
-        : audio_out_buffer + (AUDIO_OUT_BUFFER_SIZE));
+        : audio_out_buffer + (AUDIO_OUT_BUFFER_SIZE * 2));
   }
 }
