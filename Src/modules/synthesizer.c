@@ -56,8 +56,8 @@ void mix(int16_t* out_buffer) {
   for(size_t voice = 0; voice < VOICE_COUNT; voice++) {
     if (voice_table[voice].active) {
       for(size_t i = 0; i < VOICE_BUFFER_SIZE; i++) {
-        // Samples for the right channel seem to be ignored
         out_buffer[i * 4] += voice_table[voice].samples[i];
+        out_buffer[i * 4 + 2] += voice_table[voice].samples[i];
       }
     }
   }

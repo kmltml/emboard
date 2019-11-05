@@ -20,8 +20,6 @@ void voice_scheduler_task(void* args) {
   while(true) {
     BaseType_t recv = xQueueReceive(note_events, &ev, portMAX_DELAY);
     if (recv == pdTRUE) {
-      printf("[SCHED] %s %d\n", ev.type == NE_DOWN ? "DOWN" : "UP", ev.pitch);
-
       while(xSemaphoreTake(voice_table_lock, portMAX_DELAY) == pdFALSE);
 
       switch (ev.type) {

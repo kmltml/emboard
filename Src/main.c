@@ -231,6 +231,7 @@ int main(void)
   note_source_init();
   gui_init();
   synthesizer_init();
+  oscillator_init();
   voice_scheduler_init();
   /* USER CODE END 2 */
 
