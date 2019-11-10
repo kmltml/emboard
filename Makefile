@@ -37,7 +37,6 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Src/main.c \
-Src/app.c \
 Src/modules/note_source.c \
 Src/modules/synthesizer.c \
 Src/modules/voice_scheduler.c \
