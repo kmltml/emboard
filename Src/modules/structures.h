@@ -25,3 +25,9 @@ typedef struct {
   oscillator_state osc;
   int16_t samples[VOICE_BUFFER_SIZE];
 } voice_entry;
+
+typedef struct {
+  oscillator_settings osc;
+} settings;
+
+extern settings current_settings;
