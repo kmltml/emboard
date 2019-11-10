@@ -1,7 +1,6 @@
 #include "gui.h"
 #include "synthesizer.h"
 
-#include <math.h>
 #include <stdbool.h>
 
 #include "cmsis_os.h"
@@ -89,6 +88,9 @@ void waitUntilTouchStops(TS_StateTypeDef* touchScreenState);
 float sliderPositionToValue(const Slider* slider, uint16_t posY);
 uint16_t sliderValueToPosition(const Slider* slider);
 float clampf(float min, float x, float max);
+
+//Math utils:
+uint16_t round_to_uint16(float f);
 
 void gui_init() {
 	//Initialize LCD:
@@ -264,8 +266,8 @@ void drawMiniPanel(const MainScreen* mainScreen, uint8_t panelId) {
 			BSP_LCD_FillRect(
 				panel->bounds.x - MINI_BORDER_INACTIVE - MINI_BORDER_OFFSET,
 				panel->bounds.y - MINI_BORDER_INACTIVE - MINI_BORDER_OFFSET,
-				panel->bounds.w + 2 * MINI_BORDER_INACTIVE,
-				panel->bounds.h + 2 * MINI_BORDER_INACTIVE
+				panel->bounds.w + 2 * (MINI_BORDER_INACTIVE + MINI_BORDER_OFFSET),
+				panel->bounds.h + 2 * (MINI_BORDER_INACTIVE + MINI_BORDER_OFFSET)
 			);
 		}
 
@@ -323,29 +325,29 @@ void drawMiniBackButton(const Rect* bounds) {
 
 	BSP_LCD_SetTextColor(COLOR_BACK);
 	BSP_LCD_FillRect(
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH - scaleX * BACK_BUTTON_MARGIN),
-		(uint16_t) roundf(bounds->y + scaleY * BACK_BUTTON_MARGIN),
-		(uint16_t) roundf(scaleX * BACK_BUTTON_WIDTH),
-		(uint16_t) roundf(scaleY * (SLIDER_POS_MIN_Y - 2 * BACK_BUTTON_MARGIN))
+		round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH - scaleX * BACK_BUTTON_MARGIN),
+		round_to_uint16(bounds->y + scaleY * BACK_BUTTON_MARGIN),
+		round_to_uint16(scaleX * BACK_BUTTON_WIDTH),
+		round_to_uint16(scaleY * (SLIDER_POS_MIN_Y - 2 * BACK_BUTTON_MARGIN))
 	);
 
 	BSP_LCD_SetTextColor(0xff000000);
 	BSP_LCD_DrawHLine(
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
-		(uint16_t) roundf(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
-		(uint16_t) roundf(scaleX * (BACK_BUTTON_WIDTH - 2 * BACK_BUTTON_MARGIN))
+		round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
+		round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
+		round_to_uint16(scaleX * (BACK_BUTTON_WIDTH - 2 * BACK_BUTTON_MARGIN))
 	);
 	BSP_LCD_DrawLine(
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
-		(uint16_t) roundf(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * (BACK_BUTTON_WIDTH + BACK_BUTTON_ARROW_OFFSET)),
-		(uint16_t) roundf(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 - BACK_BUTTON_ARROW_OFFSET))
+		round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
+		round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
+		round_to_uint16(bounds->x + bounds->w - scaleX * (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
+		round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 - BACK_BUTTON_ARROW_OFFSET))
 	);
 	BSP_LCD_DrawLine(
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
-		(uint16_t) roundf(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
-		(uint16_t) roundf(bounds->x + bounds->w - scaleX * (BACK_BUTTON_WIDTH + BACK_BUTTON_ARROW_OFFSET)),
-		(uint16_t) roundf(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 + BACK_BUTTON_ARROW_OFFSET))
+		round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
+		round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
+		round_to_uint16(bounds->x + bounds->w - scaleX * (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
+		round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 + BACK_BUTTON_ARROW_OFFSET))
 	);
 }
 
@@ -359,7 +361,7 @@ void drawSlider(const ConfigPanel* panel, uint8_t sliderId) {
 			slider->posX - SLIDER_BG_WIDTH / 2,
 			SLIDER_POS_MIN_Y - SLIDER_RADIUS_ACTIVE,
 			SLIDER_BG_WIDTH,
-			SLIDER_HEIGHT + 2 * SLIDER_RADIUS_ACTIVE
+			SLIDER_HEIGHT + 2 * SLIDER_RADIUS_ACTIVE + 1
 		);
 
 		//Choose color palette:
@@ -418,20 +420,20 @@ void drawMiniSlider(const ConfigPanel* panel, uint8_t sliderId) {
 		primaryColor = COLOR_INACTIVE;
 		radius = SLIDER_RADIUS_INACTIVE;
 	}
-	radius = (uint16_t) roundf(scaleR * radius);
+	radius = round_to_uint16(scaleR * radius);
 
 	//Draw bar:
 	BSP_LCD_SetTextColor(primaryColor);
 	BSP_LCD_FillRect(
-		(uint16_t) roundf(bounds->x + scaleX * slider->posX - scaleX * SLIDER_WIDTH / 2),
-		(uint16_t) roundf(bounds->y + scaleY * SLIDER_POS_MIN_Y),
-		(uint16_t) roundf(scaleX * SLIDER_WIDTH),
-		(uint16_t) roundf(scaleY * SLIDER_HEIGHT)
+		round_to_uint16(bounds->x + scaleX * slider->posX - scaleX * SLIDER_WIDTH / 2),
+		round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y),
+		round_to_uint16(scaleX * SLIDER_WIDTH),
+		round_to_uint16(scaleY * SLIDER_HEIGHT)
 	);
 
 	//Draw knob:
-	uint16_t posX = (uint16_t) roundf(bounds->x + scaleX * slider->posX);
-	uint16_t posY = (uint16_t) roundf(bounds->y + scaleY * sliderValueToPosition(slider));
+	uint16_t posX = round_to_uint16(bounds->x + scaleX * slider->posX);
+	uint16_t posY = round_to_uint16(bounds->y + scaleY * sliderValueToPosition(slider));
 
 	BSP_LCD_SetTextColor(0xff5edfff);
 	BSP_LCD_FillCircle(posX, posY, (uint16_t) radius);
@@ -471,7 +473,7 @@ uint8_t resolveSelectedSlider(const ConfigPanel* panel, uint16_t touchX, uint16_
 
 float sliderPositionToValue(const Slider* slider, uint16_t posY) {
 	float value = slider->max - (posY - SLIDER_POS_MIN_Y) * (slider->max - slider->min) / SLIDER_HEIGHT;
-	value = slider->min + roundf((value - slider->min) / slider->step) * slider->step; //?
+	value = slider->min + round_to_uint16((value - slider->min) / slider->step) * slider->step; //?
 	return clampf(slider->min, value, slider->max);
 }
 
@@ -481,4 +483,13 @@ uint16_t sliderValueToPosition(const Slider* slider) {
 
 float clampf(float min, float x, float max) {
 	return (x < min) ? min : ((x > max) ? max : x);
+}
+
+uint16_t round_to_uint16(float f) {
+  if(f < 0.0f)
+    return 0;
+
+  uint16_t d = f;
+  if(f - d >= 0.5f) ++d;
+  return d;
 }
