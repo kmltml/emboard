@@ -42,14 +42,19 @@ void oscillator_init() {
 
   //Initial values (adjustable via GUI):
   current_settings.osc.shape = 4.1f;
+  current_settings.osc.amplitude = 0x5000;
 }
 
 void oscillator_reset(voice_entry* voice) {
+  voice->osc.damping = false;
   voice->osc.phase = 75;
+  voice->osc.amplitude = (uint16_t) current_settings.osc.amplitude;
 }
 
-void oscillator_generate_sine(voice_entry* voice, uint16_t T, uint16_t amplitude) {
+void oscillator_generate_sine(voice_entry* voice, uint16_t T) {
+  bool damping = voice->osc.damping;
 	uint16_t phase = voice->osc.phase;
+  uint16_t amplitude = voice->osc.amplitude;
 
 	for(uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
 		if(phase >= T)
@@ -82,14 +87,20 @@ void oscillator_generate_sine(voice_entry* voice, uint16_t T, uint16_t amplitude
     //Cast to 16-bit signed integer:
 		voice->samples[i] = (int16_t) val;
 
+    if(damping && amplitude > 0)
+      amplitude--;
+
 		phase++;
 	}
 
-	voice->osc.phase = phase;
+  voice->osc.phase = phase;
+  voice->osc.amplitude = amplitude;
 }
 
-void oscillator_generate_square(voice_entry* voice, uint16_t period, uint16_t amplitude) {
+void oscillator_generate_square(voice_entry* voice, uint16_t period) {
+  bool damping = voice->osc.damping;
 	uint16_t phase = voice->osc.phase;
+  uint16_t amplitude = voice->osc.amplitude;
 
 	for(uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
 		if(phase >= period)
@@ -100,15 +111,21 @@ void oscillator_generate_square(voice_entry* voice, uint16_t period, uint16_t am
 		else
 			voice->samples[i] = amplitude;
 
+    if(damping && amplitude > 0)
+      amplitude--;
+
 		phase++;
 	}
 
-	voice->osc.phase = phase;
+  voice->osc.phase = phase;
+  voice->osc.amplitude = amplitude;
 }
 
 
-void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period, uint16_t amplitude) {
+void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period) {
+  bool damping = voice->osc.damping;
 	uint16_t phase = voice->osc.phase;
+  uint16_t amplitude = voice->osc.amplitude;
 
 	for(uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
 		if(phase >= period)
@@ -116,14 +133,20 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period, uint16_t 
 
 		voice->samples[i] = 2 * amplitude * phase / period;
 
+    if(damping && amplitude > 0)
+      amplitude--;
+
 		phase++;
 	}
 
-	voice->osc.phase = phase;
+  voice->osc.phase = phase;
+  voice->osc.amplitude = amplitude;
 }
 
-void oscillator_generate_impulse(voice_entry* voice, uint16_t period, uint16_t amplitude) {
+void oscillator_generate_impulse(voice_entry* voice, uint16_t period) {
+  bool damping = voice->osc.damping;
 	uint16_t phase = voice->osc.phase;
+  uint16_t amplitude = voice->osc.amplitude;
 
 	for(uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
 		if(phase >= period)
@@ -134,14 +157,20 @@ void oscillator_generate_impulse(voice_entry* voice, uint16_t period, uint16_t a
 		else
 			voice->samples[i] = -((int16_t)amplitude);
 
+    if(damping && amplitude > 0)
+      amplitude--;
+
 		phase++;
 	}
 
-	voice->osc.phase = phase;
+  voice->osc.phase = phase;
+  voice->osc.amplitude = amplitude;
 }
 
-void oscillator_generate_triangle(voice_entry* voice, uint16_t period, uint16_t amplitude) {
+void oscillator_generate_triangle(voice_entry* voice, uint16_t period) {
+  bool damping = voice->osc.damping;
 	uint16_t phase = voice->osc.phase;
+  uint16_t amplitude = voice->osc.amplitude;
 
 	for(uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
 		if(phase >= period)
@@ -153,35 +182,42 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period, uint16_t 
 		  voice->samples[i] = (period - phase) * 2 * amplitude / (period / 2) - amplitude;
 		}
 
+    if(damping && amplitude > 0)
+      amplitude--;
+
 		phase++;
 	}
 
-	voice->osc.phase = phase;
+  voice->osc.phase = phase;
+  voice->osc.amplitude = amplitude;
 }
 
 void oscillator_generate(voice_entry* voice) {
   uint16_t period = base_periods[voice->note % 12];
   period >>= voice->note / 12;
-  const uint16_t amplitude = 0x5000;
 
-  float shape = current_settings.osc.shape;
+  const float shape = current_settings.osc.shape;
 
   switch((uint16_t)(shape + 0.5f)) {
-	case 0:
-		oscillator_generate_sine(voice, period, amplitude);
-		break;
-	case 1:
-		oscillator_generate_square(voice, period, amplitude);
-		break;
-	case 2:
-		oscillator_generate_sawtooth(voice, period, amplitude);
-		break;
-	case 3:
-		oscillator_generate_impulse(voice, period, amplitude);
-		break;
-	case 4:
-	default:
-		oscillator_generate_triangle(voice, period, amplitude);
-		break;
+  	case 0:
+  		oscillator_generate_sine(voice, period);
+  		break;
+  	case 1:
+  		oscillator_generate_square(voice, period);
+  		break;
+  	case 2:
+  		oscillator_generate_sawtooth(voice, period);
+  		break;
+  	case 3:
+  		oscillator_generate_impulse(voice, period);
+  		break;
+  	case 4:
+  	default:
+  		oscillator_generate_triangle(voice, period);
+  		break;
+  }
+
+  if(voice->osc.damping && voice->osc.amplitude == 0) {
+    voice->active = false;
   }
 }

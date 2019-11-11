@@ -10,7 +10,9 @@ typedef struct {
 } oscillator_settings;
 
 typedef struct {
+  bool damping;
   uint16_t phase;
+  uint16_t amplitude;
 } oscillator_state;
 
 // Main audio out buffer size in samples
