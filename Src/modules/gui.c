@@ -113,18 +113,18 @@ void gui_task(void* args) {
 	//gui_init();
 
 	//Sample values:
-	float a = 60.0f;
-    float b = 400.0f;
+	//float a = 60.0f;
+  float b = 400.0f;
 	float c = 7.0f;
 
 	Slider sliders[3];
 	uint8_t sliderCount = sizeof(sliders) / sizeof(sliders[0]);
 
 	sliders[0].posX = 40.0f;
-	sliders[0].min = 10.0f;
-	sliders[0].max = 110.0f;
-	sliders[0].step = 20.0f;
-	sliders[0].value = &a;
+	sliders[0].min = 0.1f;
+	sliders[0].max = 4.1f;
+	sliders[0].step = 1.0f;
+	sliders[0].value = &current_settings.osc.shape;
 
 	sliders[1].posX = sliders[0].posX + SLIDER_DISTANCE;
 	sliders[1].min = 0.0f;

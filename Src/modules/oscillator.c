@@ -39,6 +39,9 @@ void oscillator_init() {
     base_periods[i] = (uint64_t) base_periods[i - 1] * den / num;
     printf("%d\n", (int32_t) base_periods[i]);
   }
+
+  //Initial values (adjustable via GUI):
+  current_settings.osc.shape = 4.1f;
 }
 
 void oscillator_reset(voice_entry* voice) {
@@ -161,9 +164,7 @@ void oscillator_generate(voice_entry* voice) {
   period >>= voice->note / 12;
   const uint16_t amplitude = 0x5000;
 
-  float xshape = current_settings.osc.shape;
-
-  float shape = 4.0f;
+  float shape = current_settings.osc.shape;
 
   switch((uint16_t)(shape + 0.5f)) {
 	case 0:
