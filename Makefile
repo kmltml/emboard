@@ -253,3 +253,6 @@ program: all
 
 debug:
 	openocd -f board/stm32f7discovery.cfg
+
+format:
+	clang-format -i Src/modules/*.c Src/modules/*.h

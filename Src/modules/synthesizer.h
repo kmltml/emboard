@@ -3,8 +3,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "voice_scheduler.h"
 #include "oscillator.h"
+#include "voice_scheduler.h"
 
 void synthesizer_init();
 
