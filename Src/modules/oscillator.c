@@ -49,7 +49,7 @@ void oscillator_init() {
 
 void oscillator_reset(voice_entry* voice) {
     voice->osc.damping = false;
-    voice->osc.phase = 75;
+    voice->osc.phase = 0;
     voice->osc.amplitude = (uint16_t) current_settings.osc.amplitude;
 }
 
@@ -149,7 +149,7 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period) {
     voice->osc.amplitude = amplitude;
 }
 
-void oscillator_generate_impulse(voice_entry* voice, uint16_t period) {
+void oscillator_generate_pulse(voice_entry* voice, uint16_t period) {
     bool damping = voice->osc.damping;
     uint16_t phase = voice->osc.phase;
     uint16_t amplitude = voice->osc.amplitude;
@@ -178,6 +178,9 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period) {
     uint16_t phase = voice->osc.phase;
     uint16_t amplitude = voice->osc.amplitude;
 
+    // HACK. Lazy way to make the oscillator start at 0
+    phase += period / 4;
+
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
             phase -= period;
@@ -195,6 +198,8 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period) {
 
         phase++;
     }
+
+    phase -= period / 4;
 
     voice->osc.phase = phase;
     voice->osc.amplitude = amplitude;
@@ -217,7 +222,7 @@ void oscillator_generate(voice_entry* voice) {
             oscillator_generate_sawtooth(voice, period);
             break;
         case 3:
-            oscillator_generate_impulse(voice, period);
+            oscillator_generate_pulse(voice, period);
             break;
         case 4:
         default:
