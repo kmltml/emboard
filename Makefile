@@ -42,6 +42,7 @@ Src/modules/synthesizer.c \
 Src/modules/voice_scheduler.c \
 Src/modules/gui.c \
 Src/modules/oscillator.c \
+Src/modules/gui/keyboard.c \
 Src/bsp_driver_sd.c \
 Src/sd_diskio.c \
 Src/fatfs.c \
@@ -255,4 +256,4 @@ debug:
 	openocd -f board/stm32f7discovery.cfg
 
 format:
-	clang-format -i Src/modules/*.c Src/modules/*.h
+	clang-format -i Src/modules/*.c Src/modules/*.h Src/modules/gui/*.c Src/modules/gui/*.h

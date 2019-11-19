@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "gui/keyboard.h"
 #include "synthesizer.h"
 
 #include <stdbool.h>
@@ -6,9 +7,6 @@
 #include "cmsis_os.h"
 #include "stm32746g_discovery_lcd.h"
 #include "stm32746g_discovery_ts.h"
-
-#define LCD_WIDTH RK043FN48H_WIDTH
-#define LCD_HEIGHT RK043FN48H_HEIGHT
 
 // clang-format off
 #define SLIDER_DISTANCE          110
@@ -170,6 +168,7 @@ void viewMainScreen(MainScreen* screen) {
     TS_StateTypeDef touchScreenState;
     while (true) {
         if (BSP_TS_GetState(&touchScreenState) == TS_OK) {
+            updateKeyboard(&touchScreenState);
             if (touchScreenState.touchDetected > 0) {
                 uint16_t touchX = touchScreenState.touchX[0];
                 uint16_t touchY = touchScreenState.touchY[0];
@@ -248,6 +247,8 @@ void drawMainScreen(const MainScreen* mainScreen) {
 
     for (uint8_t i = 0; i < mainScreen->panelCount; ++i)
         drawMiniPanel(mainScreen, i);
+
+    drawKeyboard();
 }
 
 void drawMiniPanel(const MainScreen* mainScreen, uint8_t panelId) {
