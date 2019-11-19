@@ -22,6 +22,6 @@ void note_source_task(void* args) {
         osDelay(3000);
         ev.type = NE_UP;
         xQueueSend(note_events, &ev, portMAX_DELAY);
-        osDelay(1000);
+        osDelay(10000);
     }
 }
