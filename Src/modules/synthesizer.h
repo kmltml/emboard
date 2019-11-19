@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include "oscillator.h"
+#include "envelope.h"
 #include "voice_scheduler.h"
 
 void synthesizer_init();

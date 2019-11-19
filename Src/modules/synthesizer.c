@@ -47,6 +47,7 @@ void synthesizer_init() {
 
 void synthesize(voice_entry* voice) {
     oscillator_generate(voice);
+    envelope_process(voice);
 }
 
 void mix(int16_t* out_buffer) {
