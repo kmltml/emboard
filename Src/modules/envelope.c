@@ -4,6 +4,7 @@
 #include "stm32746g_discovery_audio.h"
 
 #define ENVELOPE_PREC 16
+#define MAX_LEVEL (1 << ENVELOPE_PREC)
 
 void envelope_process_attack(voice_entry* voice);
 void envelope_process_decay(voice_entry* voice);
@@ -17,9 +18,9 @@ void envelope_constant(voice_entry* voice);
 void envelope_advance(voice_entry* voice, uint16_t duration,
                       envelope_stage next_stage, uint32_t initial_level);
 
-uint16_t time_to_cycles(float time);
-
 int32_t roundf_32(float f);
+uint16_t time_to_cycles(float time);
+inline int32_t get_sustain_level(void);
 
 void envelope_init() {
     current_settings.env.attack_time = 5.0f;
@@ -66,21 +67,17 @@ void envelope_process_attack(voice_entry* voice) {
     const uint16_t duration_in_cycles =
         time_to_cycles(current_settings.env.attack_time);
 
-    const int32_t max_level = 1 << ENVELOPE_PREC;
-
-    envelope_linear(voice, 0, max_level, duration_in_cycles);
-    envelope_advance(voice, duration_in_cycles, ENVELOPE_DECAY, max_level);
+    envelope_linear(voice, 0, MAX_LEVEL, duration_in_cycles);
+    envelope_advance(voice, duration_in_cycles, ENVELOPE_DECAY, MAX_LEVEL);
 }
 
 void envelope_process_decay(voice_entry* voice) {
     const uint16_t duration_in_cycles =
         time_to_cycles(current_settings.env.decay_time);
 
-    const int32_t max_level = 1 << ENVELOPE_PREC;
-    const int32_t sustain_level =
-        roundf_32(max_level * current_settings.env.sustain_level);
+    const int32_t sustain_level = get_sustain_level();
 
-    envelope_linear(voice, max_level, sustain_level, duration_in_cycles);
+    envelope_linear(voice, MAX_LEVEL, sustain_level, duration_in_cycles);
     envelope_advance(voice, duration_in_cycles, ENVELOPE_SUSTAIN,
                      sustain_level);
 }
@@ -93,9 +90,7 @@ void envelope_process_release(voice_entry* voice) {
     const uint16_t duration_in_cycles =
         time_to_cycles(current_settings.env.release_time);
 
-    const int32_t max_level = 1 << ENVELOPE_PREC;
-    const int32_t sustain_level =
-        roundf_32(max_level * current_settings.env.sustain_level);
+    const int32_t sustain_level = get_sustain_level();
 
     envelope_linear(voice, sustain_level, 0, duration_in_cycles);
     envelope_advance(voice, duration_in_cycles, ENVELOPE_SILENT, 0);
@@ -171,4 +166,8 @@ int32_t roundf_32(float f) {
 
 uint16_t time_to_cycles(float time) {
     return (uint16_t) roundf_32(time * AUDIO_FREQUENCY_44K / VOICE_BUFFER_SIZE);
+}
+
+inline int32_t get_sustain_level(void) {
+    return roundf_32(MAX_LEVEL * current_settings.env.sustain_level);
 }
