@@ -36,10 +36,10 @@ void voice_scheduler_task(void* args) {
                             least_audible_released_voice = i;
                             least_audible_released_level =
                                 voice_table[i].env.level;
-                        } else {
-                            first_inactive_voice = i;
-                            break;
                         }
+                    } else {
+                        first_inactive_voice = i;
+                        break;
                     }
                 }
 
