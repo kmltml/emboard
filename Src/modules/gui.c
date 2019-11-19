@@ -337,18 +337,16 @@ void drawMiniBackButton(const Rect* bounds) {
         round_to_uint16(bounds->x + bounds->w -
                         scaleX *
                             (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
-        round_to_uint16(bounds->y +
-                        scaleY *
-                            (SLIDER_POS_MIN_Y / 2 - BACK_BUTTON_ARROW_OFFSET)));
+        round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 -
+                                              BACK_BUTTON_ARROW_OFFSET)));
     BSP_LCD_DrawLine(
         round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
         round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
         round_to_uint16(bounds->x + bounds->w -
                         scaleX *
                             (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
-        round_to_uint16(bounds->y +
-                        scaleY *
-                            (SLIDER_POS_MIN_Y / 2 + BACK_BUTTON_ARROW_OFFSET)));
+        round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 +
+                                              BACK_BUTTON_ARROW_OFFSET)));
 }
 
 void drawSlider(const ConfigPanel* panel, uint8_t sliderId) {
@@ -469,19 +467,18 @@ uint8_t resolveSelectedSlider(const ConfigPanel* panel, uint16_t touchX,
 }
 
 float sliderPositionToValue(const Slider* slider, uint16_t posY) {
-    float value =
-        slider->max -
-        (posY - SLIDER_POS_MIN_Y) * (slider->max - slider->min) / SLIDER_HEIGHT;
-    value = slider->min +
-            round_to_uint16((value - slider->min) / slider->step) *
-                slider->step; //?
+    float value = slider->max - (posY - SLIDER_POS_MIN_Y) *
+                                    (slider->max - slider->min) / SLIDER_HEIGHT;
+    value =
+        slider->min + round_to_uint16((value - slider->min) / slider->step) *
+                          slider->step; //?
     return clampf(slider->min, value, slider->max);
 }
 
 uint16_t sliderValueToPosition(const Slider* slider) {
-    return (uint16_t)(SLIDER_POS_MIN_Y +
-                      SLIDER_HEIGHT * (slider->max - *(slider->value)) /
-                          (slider->max - slider->min));
+    return (uint16_t)(SLIDER_POS_MIN_Y + SLIDER_HEIGHT *
+                                             (slider->max - *(slider->value)) /
+                                             (slider->max - slider->min));
 }
 
 float clampf(float min, float x, float max) {

@@ -10,150 +10,165 @@ void envelope_process_decay(voice_entry* voice);
 void envelope_process_sustain(voice_entry* voice);
 void envelope_process_release(voice_entry* voice);
 
-void envelope_linear(voice_entry* voice, int32_t initial_level, int32_t desired_level, uint16_t duration);
+void envelope_linear(voice_entry* voice, int32_t initial_level,
+                     int32_t desired_level, uint16_t duration);
 void envelope_constant(voice_entry* voice);
 
-void envelope_advance(voice_entry* voice, uint16_t duration, envelope_stage next_stage, uint32_t initial_level);
+void envelope_advance(voice_entry* voice, uint16_t duration,
+                      envelope_stage next_stage, uint32_t initial_level);
 
 uint16_t time_to_cycles(float time);
 
 int32_t roundf_32(float f);
 
 void envelope_init() {
-  current_settings.env.attack_time = 5.0f;
-  current_settings.env.decay_time = 0.0795f;
-  current_settings.env.sustain_level = 0.8f;
-  current_settings.env.release_time = 60.0f;
+    current_settings.env.attack_time = 5.0f;
+    current_settings.env.decay_time = 0.0795f;
+    current_settings.env.sustain_level = 0.8f;
+    current_settings.env.release_time = 60.0f;
 }
 
 void envelope_reset(voice_entry* voice) {
-  voice->env.stage = ENVELOPE_ATTACK;
-  voice->env.cycles = 0;
-  voice->env.level = 0;
-  voice->env.released = false;
+    voice->env.stage = ENVELOPE_ATTACK;
+    voice->env.cycles = 0;
+    voice->env.level = 0;
+    voice->env.released = false;
 }
 
 void envelope_process(voice_entry* voice) {
-  if(voice->env.released && voice->env.stage == ENVELOPE_SUSTAIN)
-    voice->env.stage = ENVELOPE_RELEASE;
+    if (voice->env.released && voice->env.stage == ENVELOPE_SUSTAIN)
+        voice->env.stage = ENVELOPE_RELEASE;
 
-  switch(voice->env.stage) {
-    case ENVELOPE_ATTACK:
-      envelope_process_attack(voice);
-      break;
+    switch (voice->env.stage) {
+        case ENVELOPE_ATTACK:
+            envelope_process_attack(voice);
+            break;
 
-    case ENVELOPE_DECAY:
-      envelope_process_decay(voice);
-      break;
+        case ENVELOPE_DECAY:
+            envelope_process_decay(voice);
+            break;
 
-    case ENVELOPE_SUSTAIN:
-      envelope_process_sustain(voice);
-      break;
+        case ENVELOPE_SUSTAIN:
+            envelope_process_sustain(voice);
+            break;
 
-    case ENVELOPE_RELEASE:
-      envelope_process_release(voice);
-      break;
-  }
+        case ENVELOPE_RELEASE:
+            envelope_process_release(voice);
+            break;
+    }
 
-  if(voice->env.stage == ENVELOPE_SILENT) {
-    voice->active = false;
-  }
+    if (voice->env.stage == ENVELOPE_SILENT) {
+        voice->active = false;
+    }
 }
 
 void envelope_process_attack(voice_entry* voice) {
-  const uint16_t duration_in_cycles = time_to_cycles(current_settings.env.attack_time);
+    const uint16_t duration_in_cycles =
+        time_to_cycles(current_settings.env.attack_time);
 
-  const int32_t max_level = 1 << ENVELOPE_PREC;
+    const int32_t max_level = 1 << ENVELOPE_PREC;
 
-  envelope_linear(voice, 0, max_level, duration_in_cycles);
-  envelope_advance(voice, duration_in_cycles, ENVELOPE_DECAY, max_level);
+    envelope_linear(voice, 0, max_level, duration_in_cycles);
+    envelope_advance(voice, duration_in_cycles, ENVELOPE_DECAY, max_level);
 }
 
 void envelope_process_decay(voice_entry* voice) {
-  const uint16_t duration_in_cycles = time_to_cycles(current_settings.env.decay_time);
+    const uint16_t duration_in_cycles =
+        time_to_cycles(current_settings.env.decay_time);
 
-  const int32_t max_level = 1 << ENVELOPE_PREC;
-  const int32_t sustain_level = roundf_32(max_level * current_settings.env.sustain_level);
+    const int32_t max_level = 1 << ENVELOPE_PREC;
+    const int32_t sustain_level =
+        roundf_32(max_level * current_settings.env.sustain_level);
 
-  envelope_linear(voice, max_level, sustain_level, duration_in_cycles);
-  envelope_advance(voice, duration_in_cycles, ENVELOPE_SUSTAIN, sustain_level);
+    envelope_linear(voice, max_level, sustain_level, duration_in_cycles);
+    envelope_advance(voice, duration_in_cycles, ENVELOPE_SUSTAIN,
+                     sustain_level);
 }
 
 void envelope_process_sustain(voice_entry* voice) {
-  envelope_constant(voice);
+    envelope_constant(voice);
 }
 
 void envelope_process_release(voice_entry* voice) {
-  const uint16_t duration_in_cycles = time_to_cycles(current_settings.env.release_time);
+    const uint16_t duration_in_cycles =
+        time_to_cycles(current_settings.env.release_time);
 
-  const int32_t max_level = 1 << ENVELOPE_PREC;
-  const int32_t sustain_level = roundf_32(max_level * current_settings.env.sustain_level);
+    const int32_t max_level = 1 << ENVELOPE_PREC;
+    const int32_t sustain_level =
+        roundf_32(max_level * current_settings.env.sustain_level);
 
-  envelope_linear(voice, sustain_level, 0, duration_in_cycles);
-  envelope_advance(voice, duration_in_cycles, ENVELOPE_SILENT, 0);
+    envelope_linear(voice, sustain_level, 0, duration_in_cycles);
+    envelope_advance(voice, duration_in_cycles, ENVELOPE_SILENT, 0);
 }
 
-/* Applies a (non-constant) linear envelope to the samples generated by the oscillator.
-   This causes the amplitude of the generated waveform to increase or decrease at a constant pace. */
-void envelope_linear(voice_entry* voice, int32_t initial_level, int32_t desired_level, uint16_t duration) {
-  int32_t level = voice->env.level;
-  int32_t delta = (desired_level - initial_level) / duration;
+/* Applies a (non-constant) linear envelope to the samples generated by the
+   oscillator. This causes the amplitude of the generated waveform to increase
+   or decrease at a constant pace. */
+void envelope_linear(voice_entry* voice, int32_t initial_level,
+                     int32_t desired_level, uint16_t duration) {
+    int32_t level = voice->env.level;
+    int32_t delta = (desired_level - initial_level) / duration;
 
-  for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-    int16_t sample = voice->samples[i];
+    for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
+        int16_t sample = voice->samples[i];
 
-    bool sign = sample < 0;
-    if(sign) sample = -sample;
+        bool sign = sample < 0;
+        if (sign)
+            sample = -sample;
 
-    sample = (int16_t) ((sample * level) >> ENVELOPE_PREC);
-    if(sign) sample = -sample;
+        sample = (int16_t)((sample * level) >> ENVELOPE_PREC);
+        if (sign)
+            sample = -sample;
 
-    voice->samples[i] = sample;
-    level += delta;
-  }
+        voice->samples[i] = sample;
+        level += delta;
+    }
 
-  voice->env.level = level;
+    voice->env.level = level;
 }
 
 /* Applies a constant envelope to the samples generated by the oscillator.
-   The amplitude of the generated waveform is effectively scaled down, but doesn't change over time. */
+   The amplitude of the generated waveform is effectively scaled down, but
+   doesn't change over time. */
 void envelope_constant(voice_entry* voice) {
-  const int32_t level = voice->env.level;
+    const int32_t level = voice->env.level;
 
-  for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-    int16_t sample = voice->samples[i];
+    for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
+        int16_t sample = voice->samples[i];
 
-    bool sign = sample < 0;
-    if(sign) sample = -sample;
+        bool sign = sample < 0;
+        if (sign)
+            sample = -sample;
 
-    sample = (int16_t) ((sample * level) >> ENVELOPE_PREC);
-    if(sign) sample = -sample;
+        sample = (int16_t)((sample * level) >> ENVELOPE_PREC);
+        if (sign)
+            sample = -sample;
 
-    voice->samples[i] = sample;
-  }
+        voice->samples[i] = sample;
+    }
 }
 
 /* Increments the cycle counter, advancing to the next stage if necessary. */
-void envelope_advance(voice_entry* voice, uint16_t duration, envelope_stage next_stage, uint32_t initial_level) {
-  voice->env.cycles++;
-  if(voice->env.cycles >= duration) {
-    voice->env.stage = next_stage;
-    voice->env.cycles = 0;
-    voice->env.level = initial_level;
-  }
+void envelope_advance(voice_entry* voice, uint16_t duration,
+                      envelope_stage next_stage, uint32_t initial_level) {
+    voice->env.cycles++;
+    if (voice->env.cycles >= duration) {
+        voice->env.stage = next_stage;
+        voice->env.cycles = 0;
+        voice->env.level = initial_level;
+    }
 }
 
 int32_t roundf_32(float f) {
-  if(f < 0.0f) {
-    int32_t i = -((int32_t) (-f));
-    return (i - f >= 0.5f) ? (i - 1) : i;
-  }
-  else {
-    int32_t i = (int32_t) f;
-    return (f - i >= 0.5f) ? (i + 1) : i;
-  }
+    if (f < 0.0f) {
+        int32_t i = -((int32_t)(-f));
+        return (i - f >= 0.5f) ? (i - 1) : i;
+    } else {
+        int32_t i = (int32_t) f;
+        return (f - i >= 0.5f) ? (i + 1) : i;
+    }
 }
 
 uint16_t time_to_cycles(float time) {
-  return (uint16_t) roundf_32(time * AUDIO_FREQUENCY_44K / VOICE_BUFFER_SIZE);
+    return (uint16_t) roundf_32(time * AUDIO_FREQUENCY_44K / VOICE_BUFFER_SIZE);
 }
