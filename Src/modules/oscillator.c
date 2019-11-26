@@ -47,7 +47,7 @@ void oscillator_init() {
 }
 
 void oscillator_reset(voice_entry* voice) {
-    voice->osc.phase = 75;
+    voice->osc.phase = 0;
 }
 
 void oscillator_generate_sine(voice_entry* voice, uint16_t T,
@@ -154,6 +154,9 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
                                   uint16_t amplitude) {
     uint16_t phase = voice->osc.phase;
 
+    // HACK. Lazy way to make the oscillator start at 0
+    phase += period / 4;
+
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
             phase -= period;
@@ -168,6 +171,8 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
 
         phase++;
     }
+
+    phase -= period / 4;
 
     voice->osc.phase = phase;
 }
