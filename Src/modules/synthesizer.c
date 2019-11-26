@@ -50,6 +50,19 @@ void synthesize(voice_entry* voice) {
     envelope_process(voice);
 }
 
+int16_t add_saturate(int16_t a, int16_t b) {
+    int32_t res = a + b;
+    const int16_t max = 0x7fff;
+    const int16_t min = -0x8000;
+    if (res >= max) {
+        res = max;
+    }
+    if (res <= min) {
+        res = min;
+    }
+    return res;
+}
+
 void mix(int16_t* out_buffer) {
     for (size_t i = 0; i < AUDIO_OUT_BUFFER_SIZE * 2; i++) {
         out_buffer[i] = 0;
@@ -57,8 +70,9 @@ void mix(int16_t* out_buffer) {
     for (size_t voice = 0; voice < VOICE_COUNT; voice++) {
         if (voice_table[voice].active) {
             for (size_t i = 0; i < VOICE_BUFFER_SIZE; i++) {
-                out_buffer[i * 4] += voice_table[voice].samples[i];
-                out_buffer[i * 4 + 2] += voice_table[voice].samples[i];
+                int16_t sample = voice_table[voice].samples[i];
+                out_buffer[i * 4] = add_saturate(out_buffer[i * 4], sample);
+                out_buffer[i * 4 + 2] = add_saturate(out_buffer[i * 4 + 2], sample);
             }
         }
     }
