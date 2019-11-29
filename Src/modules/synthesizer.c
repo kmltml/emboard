@@ -34,7 +34,7 @@ void BSP_AUDIO_OUT_HalfTransfer_CallBack(void) {
 
 void synthesizer_init() {
     uint8_t init_res =
-        BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE1, 20, AUDIO_FREQUENCY_44K);
+        BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE1, 50, AUDIO_FREQUENCY_44K);
     if (init_res == 0) {
         printf("[INIT] Audio init ok\n");
     } else {

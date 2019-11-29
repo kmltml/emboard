@@ -43,7 +43,7 @@ void oscillator_init() {
 
     // Initial values (adjustable via GUI):
     current_settings.osc.shape = 4.1f;
-    current_settings.osc.amplitude = 0x5000;
+    current_settings.osc.amplitude = 0x1000;
 }
 
 void oscillator_reset(voice_entry* voice) {
