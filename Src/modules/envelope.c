@@ -23,10 +23,10 @@ uint16_t time_to_cycles(float time);
 inline int32_t get_sustain_level(void);
 
 void envelope_init() {
-    current_settings.env.attack_time = 1.0f;
-    current_settings.env.decay_time = 0.0795f;
-    current_settings.env.sustain_level = 0.8f;
-    current_settings.env.release_time = 3.0f;
+    current_settings.env.attack_time = 0.2f;
+    current_settings.env.decay_time = 0.1f;
+    current_settings.env.sustain_level = 0.5f;
+    current_settings.env.release_time = 1.0f;
 }
 
 void envelope_reset(voice_entry* voice) {
@@ -109,9 +109,8 @@ void envelope_linear(voice_entry* voice, int32_t initial_level,
     int32_t sample_since_stage_start = voice->env.cycles * VOICE_BUFFER_SIZE;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        const int32_t level =
-            initial_level +
-            delta * sample_since_stage_start / duration_in_samples;
+        const int32_t level = initial_level + delta * sample_since_stage_start /
+                                                  duration_in_samples;
 
         int16_t sample = voice->samples[i];
 

@@ -44,8 +44,8 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
                     }
                 }
 
-                if (note ==
-                    -1) { // Touch on lower half or there's no black key there
+                // Touch on lower half or there's no black key there
+                if (note == -1) {
                     int key_index = x / WHITE_KEY_WIDTH;
                     note = white_key_indices[key_index % 7] + 60 +
                            key_index / 7 * 12;

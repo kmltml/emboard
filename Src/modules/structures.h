@@ -9,7 +9,9 @@ typedef struct {
     float tune;
 } oscillator_settings;
 
-typedef struct { uint16_t phase; } oscillator_state;
+typedef struct {
+    uint16_t phase;
+} oscillator_state;
 
 typedef enum {
     ENVELOPE_ATTACK,

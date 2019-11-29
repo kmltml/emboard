@@ -43,7 +43,8 @@ void oscillator_init() {
 
     // Initial values (adjustable via GUI):
     current_settings.osc.shape = 4.1f;
-    current_settings.osc.amplitude = 0x1000;
+    current_settings.osc.amplitude = 1.0;
+    current_settings.osc.tune = 0.0;
 }
 
 void oscillator_reset(voice_entry* voice) {
@@ -182,7 +183,8 @@ void oscillator_generate(voice_entry* voice) {
     period >>= voice->note / 12;
 
     const float shape = current_settings.osc.shape;
-    const uint16_t amplitude = (uint16_t) current_settings.osc.amplitude;
+    const uint16_t amplitude =
+        (uint16_t) 0x1000 * current_settings.osc.amplitude;
 
     switch ((uint16_t)(shape + 0.5f)) {
         case 0:

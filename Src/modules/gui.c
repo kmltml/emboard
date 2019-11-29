@@ -111,46 +111,85 @@ void gui_init() {
     BSP_TS_Init(LCD_WIDTH, LCD_HEIGHT);
 }
 
+static Slider oscillatorSliders[3];
+
+void initOscillatorPanel(ConfigPanel* oscillatorPanel) {
+    uint8_t sliderCount =
+        sizeof(oscillatorSliders) / sizeof(oscillatorSliders[0]);
+
+    oscillatorSliders[0].posX = 40;
+    oscillatorSliders[0].min = 0.1f;
+    oscillatorSliders[0].max = 4.1f;
+    oscillatorSliders[0].step = 1.0f;
+    oscillatorSliders[0].value = &current_settings.osc.shape;
+
+    oscillatorSliders[1].posX = oscillatorSliders[0].posX + SLIDER_DISTANCE;
+    oscillatorSliders[1].min = 0.0f;
+    oscillatorSliders[1].max = 1.0f;
+    oscillatorSliders[1].step = 0.05f;
+    oscillatorSliders[1].value = &current_settings.osc.amplitude;
+
+    oscillatorSliders[2].posX = oscillatorSliders[1].posX + SLIDER_DISTANCE;
+    oscillatorSliders[2].min = -12.0f;
+    oscillatorSliders[2].max = 12.0f;
+    oscillatorSliders[2].step = 1.0f;
+    oscillatorSliders[2].value = &current_settings.osc.tune;
+
+    oscillatorPanel->bounds.x = 20;
+    oscillatorPanel->bounds.y = 20;
+    oscillatorPanel->bounds.w = 140;
+    oscillatorPanel->bounds.h = 80;
+    oscillatorPanel->sliders = oscillatorSliders;
+    oscillatorPanel->sliderCount = sliderCount;
+    oscillatorPanel->highlightedSlider = SELECTION_NONE;
+}
+
+static Slider envelopeSliders[4];
+
+void initEnvelopePanel(ConfigPanel* envelopePanel) {
+    envelopeSliders[0] = (Slider){.posX = 40,
+                                  .min = 0.0,
+                                  .max = 2.0,
+                                  .value = &current_settings.env.attack_time,
+                                  .step = 0.1,
+                                  .mutable = true};
+    envelopeSliders[1] =
+        (Slider){.posX = envelopeSliders[0].posX + SLIDER_DISTANCE,
+                 .min = 0.0,
+                 .max = 2.0,
+                 .value = &current_settings.env.decay_time,
+                 .step = 0.1,
+                 .mutable = true};
+    envelopeSliders[2] =
+        (Slider){.posX = envelopeSliders[1].posX + SLIDER_DISTANCE,
+                 .min = 0.0,
+                 .max = 1.0,
+                 .value = &current_settings.env.sustain_level,
+                 .step = 0.1,
+                 .mutable = true};
+    envelopeSliders[3] =
+        (Slider){.posX = envelopeSliders[2].posX + SLIDER_DISTANCE,
+                 .min = 0.0,
+                 .max = 5.0,
+                 .value = &current_settings.env.release_time,
+                 .step = 0.1,
+                 .mutable = true};
+    *envelopePanel = (ConfigPanel){
+        .bounds = {.x = 180, .y = 20, .w = 140, .h = 80},
+        .sliders = envelopeSliders,
+        .sliderCount = sizeof(envelopeSliders) / sizeof(envelopeSliders[0]),
+        .highlightedSlider = SELECTION_NONE};
+}
+
 void gui_task(void* args) {
 
     // gui_init();
 
-    // Sample values:
-    // float a = 60.0f;
-    float b = 400.0f;
-    float c = 7.0f;
-
-    Slider sliders[3];
-    uint8_t sliderCount = sizeof(sliders) / sizeof(sliders[0]);
-
-    sliders[0].posX = 40.0f;
-    sliders[0].min = 0.1f;
-    sliders[0].max = 4.1f;
-    sliders[0].step = 1.0f;
-    sliders[0].value = &current_settings.osc.shape;
-
-    sliders[1].posX = sliders[0].posX + SLIDER_DISTANCE;
-    sliders[1].min = 0.0f;
-    sliders[1].max = 1000.0f;
-    sliders[1].step = 100.0f;
-    sliders[1].value = &b;
-
-    sliders[2].posX = sliders[1].posX + SLIDER_DISTANCE;
-    sliders[2].min = 3.0f;
-    sliders[2].max = 9.0f;
-    sliders[2].step = 1.0f;
-    sliders[2].value = &c;
-
-    ConfigPanel panels[1];
+    ConfigPanel panels[2];
     uint8_t panelCount = sizeof(panels) / sizeof(panels[0]);
 
-    panels[0].bounds.x = 20;
-    panels[0].bounds.y = 20;
-    panels[0].bounds.w = 140;
-    panels[0].bounds.h = 80;
-    panels[0].sliders = sliders;
-    panels[0].sliderCount = sliderCount;
-    panels[0].highlightedSlider = SELECTION_NONE;
+    initOscillatorPanel(&panels[0]);
+    initEnvelopePanel(&panels[1]);
 
     MainScreen mainScreen;
     mainScreen.panels = panels;
@@ -338,18 +377,16 @@ void drawMiniBackButton(const Rect* bounds) {
         round_to_uint16(bounds->x + bounds->w -
                         scaleX *
                             (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
-        round_to_uint16(bounds->y +
-                        scaleY *
-                            (SLIDER_POS_MIN_Y / 2 - BACK_BUTTON_ARROW_OFFSET)));
+        round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 -
+                                              BACK_BUTTON_ARROW_OFFSET)));
     BSP_LCD_DrawLine(
         round_to_uint16(bounds->x + bounds->w - scaleX * BACK_BUTTON_WIDTH),
         round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y / 2),
         round_to_uint16(bounds->x + bounds->w -
                         scaleX *
                             (BACK_BUTTON_WIDTH - BACK_BUTTON_ARROW_OFFSET)),
-        round_to_uint16(bounds->y +
-                        scaleY *
-                            (SLIDER_POS_MIN_Y / 2 + BACK_BUTTON_ARROW_OFFSET)));
+        round_to_uint16(bounds->y + scaleY * (SLIDER_POS_MIN_Y / 2 +
+                                              BACK_BUTTON_ARROW_OFFSET)));
 }
 
 void drawSlider(const ConfigPanel* panel, uint8_t sliderId) {
@@ -470,19 +507,18 @@ uint8_t resolveSelectedSlider(const ConfigPanel* panel, uint16_t touchX,
 }
 
 float sliderPositionToValue(const Slider* slider, uint16_t posY) {
-    float value =
-        slider->max -
-        (posY - SLIDER_POS_MIN_Y) * (slider->max - slider->min) / SLIDER_HEIGHT;
-    value = slider->min +
-            round_to_uint16((value - slider->min) / slider->step) *
-                slider->step; //?
+    float value = slider->max - (posY - SLIDER_POS_MIN_Y) *
+                                    (slider->max - slider->min) / SLIDER_HEIGHT;
+    value =
+        slider->min + round_to_uint16((value - slider->min) / slider->step) *
+                          slider->step; //?
     return clampf(slider->min, value, slider->max);
 }
 
 uint16_t sliderValueToPosition(const Slider* slider) {
-    return (uint16_t)(SLIDER_POS_MIN_Y +
-                      SLIDER_HEIGHT * (slider->max - *(slider->value)) /
-                          (slider->max - slider->min));
+    return (uint16_t)(SLIDER_POS_MIN_Y + SLIDER_HEIGHT *
+                                             (slider->max - *(slider->value)) /
+                                             (slider->max - slider->min));
 }
 
 float clampf(float min, float x, float max) {
