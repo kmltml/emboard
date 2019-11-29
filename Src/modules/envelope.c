@@ -109,8 +109,9 @@ void envelope_linear(voice_entry* voice, int32_t initial_level,
     int32_t sample_since_stage_start = voice->env.cycles * VOICE_BUFFER_SIZE;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        const int32_t level = initial_level + delta * sample_since_stage_start /
-                                                  duration_in_samples;
+        const int32_t level =
+            initial_level +
+            delta * sample_since_stage_start / duration_in_samples;
 
         int16_t sample = voice->samples[i];
 

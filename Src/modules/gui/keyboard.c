@@ -1,7 +1,7 @@
 #include "keyboard.h"
 
-#include "../note_source.h"
 #include "../gui.h"
+#include "../note_source.h"
 
 #include <stdbool.h>
 
@@ -18,7 +18,7 @@
 static int pressedNotes[TS_MAX_NB_TOUCH];
 
 void initKeyboard() {
-    for(size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
+    for (size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
         pressedNotes[i] = -1;
     }
 }
@@ -36,16 +36,19 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
             int y = touchState->touchY[touchIndex];
             if (TOP_MARGIN <= y && y <= TOP_MARGIN + WHITE_KEY_HEIGHT) {
                 if (y <= TOP_MARGIN + WHITE_KEY_HEIGHT / 2) {
-                    int key_index = (x - (WHITE_KEY_WIDTH / 2)) / WHITE_KEY_WIDTH;
+                    int key_index =
+                        (x - (WHITE_KEY_WIDTH / 2)) / WHITE_KEY_WIDTH;
                     note = black_key_indices[key_index % 7];
                     if (note != -1) {
                         note += 60 + key_index / 7 * 12;
                     }
                 }
 
-                if (note == -1) { // Touch on lower half or there's no black key there
+                if (note ==
+                    -1) { // Touch on lower half or there's no black key there
                     int key_index = x / WHITE_KEY_WIDTH;
-                    note = white_key_indices[key_index % 7] + 60 + key_index / 7 * 12;
+                    note = white_key_indices[key_index % 7] + 60 +
+                           key_index / 7 * 12;
                 }
             }
         }
@@ -55,10 +58,10 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
     note_event ev;
 
     // Detect new key presses
-    for(size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
-        if(nextPressedNotes[i] != -1) {
+    for (size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
+        if (nextPressedNotes[i] != -1) {
             bool found = false;
-            for(size_t j = 0; j < TS_MAX_NB_TOUCH; j++) {
+            for (size_t j = 0; j < TS_MAX_NB_TOUCH; j++) {
                 if (pressedNotes[j] == nextPressedNotes[i]) {
                     found = true;
                     break;
@@ -72,10 +75,10 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
         }
     }
     // Detect key releases
-    for(size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
-        if(pressedNotes[i] != -1) {
+    for (size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
+        if (pressedNotes[i] != -1) {
             bool found = false;
-            for(size_t j = 0; j < TS_MAX_NB_TOUCH; j++) {
+            for (size_t j = 0; j < TS_MAX_NB_TOUCH; j++) {
                 if (pressedNotes[i] == nextPressedNotes[j]) {
                     found = true;
                     break;
@@ -88,7 +91,7 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
             }
         }
     }
-    for(size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
+    for (size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {
         pressedNotes[i] = nextPressedNotes[i];
     }
 }
