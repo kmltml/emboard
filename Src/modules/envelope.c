@@ -136,7 +136,8 @@ bool envelope_linear(voice_entry* voice, int32_t initial_level,
         sample_since_stage_start++;
     }
 
-    voice->env.level = initial_level + delta * sample_since_stage_start / duration_in_samples;
+    voice->env.level =
+        initial_level + delta * sample_since_stage_start / duration_in_samples;
 
     return true;
 }
