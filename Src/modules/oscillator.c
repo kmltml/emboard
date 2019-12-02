@@ -179,8 +179,9 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
 }
 
 void oscillator_generate(voice_entry* voice) {
-    uint16_t period = base_periods[voice->note % 12];
-    period >>= voice->note / 12;
+    uint16_t note = voice->note + current_settings.osc.tune;
+    uint16_t period = base_periods[note % 12];
+    period >>= note / 12;
 
     const float shape = current_settings.osc.shape;
     const uint16_t amplitude =
