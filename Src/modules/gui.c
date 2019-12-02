@@ -114,40 +114,38 @@ void gui_init() {
     BSP_TS_Init(LCD_WIDTH, LCD_HEIGHT);
 }
 
-static Slider oscillatorSliders[3];
+static Slider oscSliders[OSCILLATOR_COUNT][3];
 
-void initOscillatorPanel(ConfigPanel* oscillatorPanel) {
-    uint8_t sliderCount =
-        sizeof(oscillatorSliders) / sizeof(oscillatorSliders[0]);
+void initOscillatorPanel(ConfigPanel* panel, int oscIndex, uint8_t yOffset) {
+    Slider* sliders = oscSliders[oscIndex];
+    sliders[0].posX = 40;
+    sliders[0].min = 0.1f;
+    sliders[0].max = 4.1f;
+    sliders[0].step = 1.0f;
+    sliders[0].value = &current_settings.osc[oscIndex].shape;
+    sliders[0].label = "shape";
 
-    oscillatorSliders[0].posX = 40;
-    oscillatorSliders[0].min = 0.1f;
-    oscillatorSliders[0].max = 4.1f;
-    oscillatorSliders[0].step = 1.0f;
-    oscillatorSliders[0].value = &current_settings.osc.shape;
-    oscillatorSliders[0].label = "shape";
+    sliders[1].posX = sliders[0].posX + SLIDER_DISTANCE;
+    sliders[1].min = 0.0f;
+    sliders[1].max = 1.0f;
+    sliders[1].step = 0.05f;
+    sliders[1].value = &current_settings.osc[oscIndex].amplitude;
+    sliders[1].label = "amplitude";
 
-    oscillatorSliders[1].posX = oscillatorSliders[0].posX + SLIDER_DISTANCE;
-    oscillatorSliders[1].min = 0.0f;
-    oscillatorSliders[1].max = 1.0f;
-    oscillatorSliders[1].step = 0.05f;
-    oscillatorSliders[1].value = &current_settings.osc.amplitude;
-    oscillatorSliders[1].label = "amplitude";
+    sliders[2].posX = sliders[1].posX + SLIDER_DISTANCE;
+    sliders[2].min = -12.0f;
+    sliders[2].max = 12.0f;
+    sliders[2].step = 1.0f;
+    sliders[2].value = &current_settings.osc[oscIndex].tune;
+    sliders[2].label = "pitch";
 
-    oscillatorSliders[2].posX = oscillatorSliders[1].posX + SLIDER_DISTANCE;
-    oscillatorSliders[2].min = -12.0f;
-    oscillatorSliders[2].max = 12.0f;
-    oscillatorSliders[2].step = 1.0f;
-    oscillatorSliders[2].value = &current_settings.osc.tune;
-    oscillatorSliders[2].label = "pitch";
-
-    oscillatorPanel->bounds.x = 20;
-    oscillatorPanel->bounds.y = 20;
-    oscillatorPanel->bounds.w = 140;
-    oscillatorPanel->bounds.h = 80;
-    oscillatorPanel->sliders = oscillatorSliders;
-    oscillatorPanel->sliderCount = sliderCount;
-    oscillatorPanel->highlightedSlider = SELECTION_NONE;
+    panel->bounds.x = 20;
+    panel->bounds.y = 20 + yOffset;
+    panel->bounds.w = 140;
+    panel->bounds.h = 80;
+    panel->sliders = sliders;
+    panel->sliderCount = 3;
+    panel->highlightedSlider = SELECTION_NONE;
 }
 
 static Slider envelopeSliders[4];
@@ -195,11 +193,12 @@ void gui_task(void* args) {
 
     // gui_init();
 
-    ConfigPanel panels[2];
+    ConfigPanel panels[3];
     uint8_t panelCount = sizeof(panels) / sizeof(panels[0]);
 
-    initOscillatorPanel(&panels[0]);
-    initEnvelopePanel(&panels[1]);
+    initOscillatorPanel(&panels[0], 0, 0);
+    initOscillatorPanel(&panels[1], 1, 100);
+    initEnvelopePanel(&panels[2]);
 
     MainScreen mainScreen;
     mainScreen.panels = panels;

@@ -42,18 +42,24 @@ void oscillator_init() {
     }
 
     // Initial values (adjustable via GUI):
-    current_settings.osc.shape = 4.1f;
-    current_settings.osc.amplitude = 1.0;
-    current_settings.osc.tune = 0.0;
+    current_settings.osc[0].shape = 4.1f;
+    current_settings.osc[0].amplitude = 1.0;
+    current_settings.osc[0].tune = 0.0;
+
+    current_settings.osc[1].shape = 4.1f;
+    current_settings.osc[1].amplitude = 0.0;
+    current_settings.osc[1].tune = 0.0;
 }
 
 void oscillator_reset(voice_entry* voice) {
-    voice->osc.phase = 0;
+    for (size_t i = 0; i < OSCILLATOR_COUNT; i++) {
+        voice->osc[i].phase = 0;
+    }
 }
 
 void oscillator_generate_sine(voice_entry* voice, uint16_t T,
-                              uint16_t amplitude) {
-    uint16_t phase = voice->osc.phase;
+                              uint16_t amplitude, int oscIndex) {
+    uint16_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= T)
@@ -89,71 +95,71 @@ void oscillator_generate_sine(voice_entry* voice, uint16_t T,
             val = -val;
 
         // Cast to 16-bit signed integer:
-        voice->samples[i] = (int16_t) val;
+        voice->samples[i] += (int16_t) val;
 
         phase++;
     }
 
-    voice->osc.phase = phase;
+    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_square(voice_entry* voice, uint16_t period,
-                                uint16_t amplitude) {
-    uint16_t phase = voice->osc.phase;
+                                uint16_t amplitude, int oscIndex) {
+    uint16_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
             phase -= period;
 
         if (phase < period / 2)
-            voice->samples[i] = -((int16_t) amplitude);
+            voice->samples[i] += -((int16_t) amplitude);
         else
-            voice->samples[i] = amplitude;
+            voice->samples[i] += amplitude;
 
         phase++;
     }
 
-    voice->osc.phase = phase;
+    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period,
-                                  uint16_t amplitude) {
-    uint16_t phase = voice->osc.phase;
+                                  uint16_t amplitude, int oscIndex) {
+    uint16_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
             phase -= period;
 
-        voice->samples[i] = 2 * amplitude * phase / period;
+        voice->samples[i] += 2 * amplitude * phase / period;
 
         phase++;
     }
 
-    voice->osc.phase = phase;
+    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_impulse(voice_entry* voice, uint16_t period,
-                                 uint16_t amplitude) {
-    uint16_t phase = voice->osc.phase;
+                                 uint16_t amplitude, int oscIndex) {
+    uint16_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
             phase -= period;
 
         if (phase < period / 10)
-            voice->samples[i] = amplitude;
+            voice->samples[i] += amplitude;
         else
-            voice->samples[i] = -((int16_t) amplitude);
+            voice->samples[i] += -((int16_t) amplitude);
 
         phase++;
     }
 
-    voice->osc.phase = phase;
+    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
-                                  uint16_t amplitude) {
-    uint16_t phase = voice->osc.phase;
+                                  uint16_t amplitude, int oscIndex) {
+    uint16_t phase = voice->osc[oscIndex].phase;
 
     // HACK. Lazy way to make the oscillator start at 0
     phase += period / 4;
@@ -163,10 +169,10 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
             phase -= period;
 
         if (phase <= period / 2) {
-            voice->samples[i] =
+            voice->samples[i] +=
                 phase * 2 * amplitude / (period / 2) - amplitude;
         } else {
-            voice->samples[i] =
+            voice->samples[i] +=
                 (period - phase) * 2 * amplitude / (period / 2) - amplitude;
         }
 
@@ -175,34 +181,34 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
 
     phase -= period / 4;
 
-    voice->osc.phase = phase;
+    voice->osc[oscIndex].phase = phase;
 }
 
-void oscillator_generate(voice_entry* voice) {
-    uint16_t note = voice->note + current_settings.osc.tune;
+void oscillator_generate(voice_entry* voice, int oscIndex) {
+    uint16_t note = voice->note + current_settings.osc[oscIndex].tune;
     uint16_t period = base_periods[note % 12];
     period >>= note / 12;
 
-    const float shape = current_settings.osc.shape;
+    const float shape = current_settings.osc[oscIndex].shape;
     const uint16_t amplitude =
-        (uint16_t) 0x1000 * current_settings.osc.amplitude;
+        (uint16_t) 0x1000 * current_settings.osc[oscIndex].amplitude;
 
     switch ((uint16_t)(shape + 0.5f)) {
         case 0:
-            oscillator_generate_sine(voice, period, amplitude);
+            oscillator_generate_sine(voice, period, amplitude, oscIndex);
             break;
         case 1:
-            oscillator_generate_square(voice, period, amplitude);
+            oscillator_generate_square(voice, period, amplitude, oscIndex);
             break;
         case 2:
-            oscillator_generate_sawtooth(voice, period, amplitude);
+            oscillator_generate_sawtooth(voice, period, amplitude, oscIndex);
             break;
         case 3:
-            oscillator_generate_impulse(voice, period, amplitude);
+            oscillator_generate_impulse(voice, period, amplitude, oscIndex);
             break;
         case 4:
         default:
-            oscillator_generate_triangle(voice, period, amplitude);
+            oscillator_generate_triangle(voice, period, amplitude, oscIndex);
             break;
     }
 }

@@ -46,7 +46,12 @@ void synthesizer_init() {
 }
 
 void synthesize(voice_entry* voice) {
-    oscillator_generate(voice);
+    for (size_t i = 0; i < VOICE_BUFFER_SIZE; i++) {
+        voice->samples[i] = 0;
+    }
+    for (size_t i = 0; i < OSCILLATOR_COUNT; i++) {
+        oscillator_generate(voice, i);
+    }
     envelope_process(voice);
 }
 

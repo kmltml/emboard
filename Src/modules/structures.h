@@ -41,16 +41,18 @@ typedef struct {
 // TODO determine voice buffer size
 #define VOICE_BUFFER_SIZE (AUDIO_OUT_BUFFER_SIZE / 2)
 
+#define OSCILLATOR_COUNT 2
+
 typedef struct {
     bool active;
     uint8_t note;
-    oscillator_state osc;
+    oscillator_state osc[OSCILLATOR_COUNT];
     envelope_state env;
     int16_t samples[VOICE_BUFFER_SIZE];
 } voice_entry;
 
 typedef struct {
-    oscillator_settings osc;
+    oscillator_settings osc[OSCILLATOR_COUNT];
     envelope_settings env;
 } settings;
 
