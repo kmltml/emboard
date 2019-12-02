@@ -32,6 +32,7 @@ static uint32_t lcd_image_fg[LCD_HEIGHT][LCD_WIDTH]
 #define COLOR_ACTIVE 0xff3e64ff
 #define COLOR_INACTIVE 0xffb2fcff
 #define COLOR_BACK 0xff00ff00
+#define COLOR_TEXT 0xff000000
 
 #define SELECTION_NONE (uint8_t)(-1)
 #define SELECTION_BACK (SELECTION_NONE - 1)
@@ -51,6 +52,7 @@ typedef struct Slider {
     float* value;
     float step;
     bool mutable;
+    char* label;
 } Slider;
 
 typedef struct ConfigPanel {
@@ -104,6 +106,7 @@ void gui_init() {
 
     BSP_LCD_SelectLayer(0);
     BSP_LCD_Clear(0xffff00ff);
+    BSP_LCD_SetFont(&Font8);
 
     BSP_LCD_SetTransparency(0, 255);
 
@@ -122,18 +125,21 @@ void initOscillatorPanel(ConfigPanel* oscillatorPanel) {
     oscillatorSliders[0].max = 4.1f;
     oscillatorSliders[0].step = 1.0f;
     oscillatorSliders[0].value = &current_settings.osc.shape;
+    oscillatorSliders[0].label = "shape";
 
     oscillatorSliders[1].posX = oscillatorSliders[0].posX + SLIDER_DISTANCE;
     oscillatorSliders[1].min = 0.0f;
     oscillatorSliders[1].max = 1.0f;
     oscillatorSliders[1].step = 0.05f;
     oscillatorSliders[1].value = &current_settings.osc.amplitude;
+    oscillatorSliders[1].label = "amplitude";
 
     oscillatorSliders[2].posX = oscillatorSliders[1].posX + SLIDER_DISTANCE;
     oscillatorSliders[2].min = -12.0f;
     oscillatorSliders[2].max = 12.0f;
     oscillatorSliders[2].step = 1.0f;
     oscillatorSliders[2].value = &current_settings.osc.tune;
+    oscillatorSliders[2].label = "pitch";
 
     oscillatorPanel->bounds.x = 20;
     oscillatorPanel->bounds.y = 20;
@@ -152,28 +158,32 @@ void initEnvelopePanel(ConfigPanel* envelopePanel) {
                                   .max = 2.0,
                                   .value = &current_settings.env.attack_time,
                                   .step = 0.1,
-                                  .mutable = true};
+                                  .mutable = true,
+                                  .label = "A"};
     envelopeSliders[1] =
         (Slider){.posX = envelopeSliders[0].posX + SLIDER_DISTANCE,
                  .min = 0.0,
                  .max = 2.0,
                  .value = &current_settings.env.decay_time,
                  .step = 0.1,
-                 .mutable = true};
+                 .mutable = true,
+                 .label = "D"};
     envelopeSliders[2] =
         (Slider){.posX = envelopeSliders[1].posX + SLIDER_DISTANCE,
                  .min = 0.0,
                  .max = 1.0,
                  .value = &current_settings.env.sustain_level,
                  .step = 0.1,
-                 .mutable = true};
+                 .mutable = true,
+                 .label = "S"};
     envelopeSliders[3] =
         (Slider){.posX = envelopeSliders[2].posX + SLIDER_DISTANCE,
                  .min = 0.0,
                  .max = 5.0,
                  .value = &current_settings.env.release_time,
                  .step = 0.1,
-                 .mutable = true};
+                 .mutable = true,
+                 .label = "R"};
     *envelopePanel = (ConfigPanel){
         .bounds = {.x = 180, .y = 20, .w = 140, .h = 80},
         .sliders = envelopeSliders,
@@ -411,6 +421,13 @@ void drawSlider(const ConfigPanel* panel, uint8_t sliderId) {
             primaryColor = COLOR_INACTIVE;
             radius = SLIDER_RADIUS_INACTIVE;
         }
+
+        // Draw label
+        BSP_LCD_SetTextColor(COLOR_TEXT);
+        BSP_LCD_SetBackColor(COLOR_BG);
+        BSP_LCD_DisplayStringAt(slider->posX - SLIDER_WIDTH / 2,
+                                SLIDER_POS_MIN_Y - SLIDER_RADIUS_ACTIVE - 10,
+                                slider->label, LEFT_MODE);
 
         // Draw bar:
         BSP_LCD_SetTextColor(primaryColor);
