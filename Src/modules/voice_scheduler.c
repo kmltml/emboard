@@ -27,7 +27,7 @@ void voice_scheduler_task(void* args) {
             if (ev.type == NE_DOWN) {
                 size_t first_inactive_voice = VOICE_COUNT;
                 size_t least_audible_released_voice = VOICE_COUNT;
-                uint16_t least_audible_released_level = (uint16_t)(-1);
+                uint32_t least_audible_released_level = (uint32_t)(-1);
                 for (size_t i = 0; i < VOICE_COUNT; ++i) {
                     if (voice_table[i].active) {
                         if (voice_table[i].env.stage == ENVELOPE_RELEASE &&
