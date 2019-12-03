@@ -87,6 +87,11 @@ bool envelope_process_decay(voice_entry* voice) {
 }
 
 bool envelope_process_sustain(voice_entry* voice) {
+    if (voice->env.level == 0) {
+        voice->env.stage = ENVELOPE_RELEASE;
+        voice->env.cycles = 0;
+        return false;
+    }
     return envelope_constant(voice);
 }
 
