@@ -59,6 +59,7 @@
 #include "modules/gui.h"
 #include "modules/synthesizer.h"
 #include "modules/voice_scheduler.h"
+#include "modules/midi.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -257,6 +258,7 @@ int main(void)
   xTaskCreate(gui_task, "GUI", 256, NULL, 2, NULL);
   xTaskCreate(note_source_task, "NOTE_SRC", 256, NULL, 2, NULL);
   xTaskCreate(synthesizer_task, "SYNTH", 256, NULL, 10, &synthesizer_task_handle);
+  xTaskCreate(midi_task, "MIDI", 256, NULL, 2, &midi_task_handle);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -708,7 +710,7 @@ static void MX_SAI2_Init(void)
   hsai_BlockB2.Init.MonoStereoMode = SAI_STEREOMODE;
   hsai_BlockB2.Init.CompandingMode = SAI_NOCOMPANDING;
   hsai_BlockB2.Init.TriState = SAI_OUTPUT_NOTRELEASED;
-  hsai_BlockB2.FrameInit.FrameLength = 8;
+  hsai_BlockB2.FrameInit.FrameLength = 24;
   hsai_BlockB2.FrameInit.ActiveFrameLength = 1;
   hsai_BlockB2.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
   hsai_BlockB2.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
@@ -1099,7 +1101,7 @@ static void MX_USART6_UART_Init(void)
 {
 
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
+  huart6.Init.BaudRate = 31250;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;

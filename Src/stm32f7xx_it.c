@@ -37,13 +37,14 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "modules/midi.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
 extern DMA2D_HandleTypeDef hdma2d;
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_sai2_a;
+extern UART_HandleTypeDef huart6;
 
 extern TIM_HandleTypeDef htim6;
 
@@ -98,6 +99,20 @@ void DMA2_Stream4_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream4_IRQn 1 */
 
   /* USER CODE END DMA2_Stream4_IRQn 1 */
+}
+
+/**
+* @brief This function handles USART6 global interrupt.
+*/
+void USART6_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART6_IRQn 0 */
+  midiIRQ();    
+  /* USER CODE END USART6_IRQn 0 */
+  HAL_UART_IRQHandler(&huart6);
+  /* USER CODE BEGIN USART6_IRQn 1 */
+  
+  /* USER CODE END USART6_IRQn 1 */
 }
 
 /**

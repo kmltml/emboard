@@ -43,6 +43,7 @@ Src/modules/voice_scheduler.c \
 Src/modules/gui.c \
 Src/modules/oscillator.c \
 Src/modules/envelope.c \
+Src/modules/midi.c \
 Src/modules/gui/keyboard.c \
 Src/bsp_driver_sd.c \
 Src/sd_diskio.c \
