@@ -35,7 +35,7 @@ void oscillator_init() {
     // 2^(1/12) represented as a fraction, for equal temperament calculation
     uint64_t num = 579788;
     uint64_t den = 547247;
-    base_periods[0] = 5379;
+    base_periods[0] = 5394;
     for (size_t i = 1; i < 12; i++) {
         base_periods[i] = (uint64_t) base_periods[i - 1] * den / num;
         printf("%d\n", (int32_t) base_periods[i]);
