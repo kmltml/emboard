@@ -114,7 +114,7 @@ void gui_init() {
     BSP_TS_Init(LCD_WIDTH, LCD_HEIGHT);
 }
 
-static Slider oscSliders[OSCILLATOR_COUNT][3];
+static Slider oscSliders[OSCILLATOR_COUNT][4];
 
 void initOscillatorPanel(ConfigPanel* panel, int oscIndex, uint8_t yOffset) {
     Slider* sliders = oscSliders[oscIndex];
@@ -139,12 +139,19 @@ void initOscillatorPanel(ConfigPanel* panel, int oscIndex, uint8_t yOffset) {
     sliders[2].value = &current_settings.osc[oscIndex].tune;
     sliders[2].label = "pitch";
 
+    sliders[3].posX = sliders[2].posX + SLIDER_DISTANCE;
+    sliders[3].min = 0.0f;
+    sliders[3].max = 1.0f;
+    sliders[3].step = 0.05f;
+    sliders[3].value = &current_settings.osc[oscIndex].velocity_response;
+    sliders[3].label = "vel resp";
+
     panel->bounds.x = 20;
     panel->bounds.y = 20 + yOffset;
     panel->bounds.w = 140;
     panel->bounds.h = 80;
     panel->sliders = sliders;
-    panel->sliderCount = 3;
+    panel->sliderCount = 4;
     panel->highlightedSlider = SELECTION_NONE;
 }
 

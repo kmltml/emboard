@@ -45,10 +45,12 @@ void oscillator_init() {
     current_settings.osc[0].shape = 4.1f;
     current_settings.osc[0].amplitude = 1.0;
     current_settings.osc[0].tune = 0.0;
+    current_settings.osc[0].velocity_response = 0.0;
 
-    current_settings.osc[1].shape = 4.1f;
-    current_settings.osc[1].amplitude = 0.0;
-    current_settings.osc[1].tune = 0.0;
+    current_settings.osc[1].shape = 1.1f;
+    current_settings.osc[1].amplitude = 0.2;
+    current_settings.osc[1].tune = 12.0;
+    current_settings.osc[1].velocity_response = 1.0;
 }
 
 void oscillator_reset(voice_entry* voice) {
@@ -190,8 +192,9 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
     period >>= note / 12;
 
     const float shape = current_settings.osc[oscIndex].shape;
-    const uint16_t amplitude =
-        (uint16_t) 0x1000 * current_settings.osc[oscIndex].amplitude;
+    const float amp = current_settings.osc[oscIndex].amplitude;
+    const float resp = current_settings.osc[oscIndex].velocity_response;
+    const uint16_t amplitude = 0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
 
     switch ((uint16_t)(shape + 0.5f)) {
         case 0:

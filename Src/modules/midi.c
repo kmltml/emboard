@@ -43,11 +43,13 @@ void handleMessage(uint8_t command, uint8_t* data) {
     switch (command & MIDI_CMD_TYPE_MASK) {
         case MIDI_CMD_NOTE_OFF:
             ev.pitch = data[0];
+            ev.velocity = data[1];
             ev.type = NE_UP;
             xQueueSend(note_events, &ev, portMAX_DELAY);
             break;
         case MIDI_CMD_NOTE_ON:
             ev.pitch = data[0];
+            ev.velocity = data[1];
             ev.type = data[1] != 0 ? NE_DOWN : NE_UP;
             xQueueSend(note_events, &ev, portMAX_DELAY);
             break;

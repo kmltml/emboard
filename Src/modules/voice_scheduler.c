@@ -51,7 +51,9 @@ void voice_scheduler_task(void* args) {
                     voice_table[selected_voice].active = true;
                     oscillator_reset(&voice_table[selected_voice]);
                     envelope_reset(&voice_table[selected_voice]);
+
                     voice_table[selected_voice].note = ev.pitch;
+                    voice_table[selected_voice].velocity = ev.velocity;
                 }
             } else if (ev.type == NE_UP) {
                 for (size_t i = 0; i < VOICE_COUNT; ++i) {

@@ -56,6 +56,7 @@ void updateKeyboard(TS_StateTypeDef* touchState) {
     }
 
     note_event ev;
+    ev.velocity = 0x7f;
 
     // Detect new key presses
     for (size_t i = 0; i < TS_MAX_NB_TOUCH; i++) {

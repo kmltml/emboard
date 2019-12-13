@@ -7,6 +7,7 @@ typedef enum { NE_DOWN, NE_UP } note_event_type;
 
 typedef struct {
     uint8_t pitch;
+    uint8_t velocity;
     note_event_type type;
 } note_event;
 

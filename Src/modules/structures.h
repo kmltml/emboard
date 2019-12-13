@@ -7,6 +7,7 @@ typedef struct {
     float shape;
     float amplitude;
     float tune;
+    float velocity_response;
 } oscillator_settings;
 
 typedef struct {
@@ -46,6 +47,7 @@ typedef struct {
 typedef struct {
     bool active;
     uint8_t note;
+    uint8_t velocity;
     oscillator_state osc[OSCILLATOR_COUNT];
     envelope_state env;
     int16_t samples[VOICE_BUFFER_SIZE];
