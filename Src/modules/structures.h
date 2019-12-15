@@ -11,7 +11,7 @@ typedef struct {
 } oscillator_settings;
 
 typedef struct {
-    uint16_t phase;
+    uint32_t phase;
 } oscillator_state;
 
 typedef enum {

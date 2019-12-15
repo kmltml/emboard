@@ -29,13 +29,16 @@ const uint16_t sine_cache[257] = {
     0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb,
     0xfc, 0xfd, 0xfe, 0xff, 0x100};
 
-static uint16_t base_periods[12];
+static uint32_t base_periods[12];
+
+// Multiplier for fixed point representation of phase
+#define PHASE_PRECISION (1 << 6)
 
 void oscillator_init() {
     // 2^(1/12) represented as a fraction, for equal temperament calculation
-    uint64_t num = 579788;
-    uint64_t den = 547247;
-    base_periods[0] = 5394;
+    uint64_t num = 188327226;
+    uint64_t den = 177757231;
+    base_periods[0] = 345214;
     for (size_t i = 1; i < 12; i++) {
         base_periods[i] = (uint64_t) base_periods[i - 1] * den / num;
         printf("%d\n", (int32_t) base_periods[i]);
@@ -59,16 +62,16 @@ void oscillator_reset(voice_entry* voice) {
     }
 }
 
-void oscillator_generate_sine(voice_entry* voice, uint16_t T,
+void oscillator_generate_sine(voice_entry* voice, uint32_t T,
                               uint16_t amplitude, int oscIndex) {
-    uint16_t phase = voice->osc[oscIndex].phase;
+    uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= T)
             phase -= T;
 
         // Initialize x:
-        uint16_t x = phase;
+        uint32_t x = phase;
 
         // If (2 * PI * x / T) is in (PI; 2*PI):
         //  > decrease x to force (2 * PI * x / T) into the range of (0; PI),
@@ -99,15 +102,15 @@ void oscillator_generate_sine(voice_entry* voice, uint16_t T,
         // Cast to 16-bit signed integer:
         voice->samples[i] += (int16_t) val;
 
-        phase++;
+        phase += PHASE_PRECISION;
     }
 
     voice->osc[oscIndex].phase = phase;
 }
 
-void oscillator_generate_square(voice_entry* voice, uint16_t period,
+void oscillator_generate_square(voice_entry* voice, uint32_t period,
                                 uint16_t amplitude, int oscIndex) {
-    uint16_t phase = voice->osc[oscIndex].phase;
+    uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
@@ -118,15 +121,15 @@ void oscillator_generate_square(voice_entry* voice, uint16_t period,
         else
             voice->samples[i] += amplitude;
 
-        phase++;
+        phase += PHASE_PRECISION;
     }
 
     voice->osc[oscIndex].phase = phase;
 }
 
-void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period,
+void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
                                   uint16_t amplitude, int oscIndex) {
-    uint16_t phase = voice->osc[oscIndex].phase;
+    uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
@@ -134,15 +137,15 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint16_t period,
 
         voice->samples[i] += 2 * amplitude * phase / period;
 
-        phase++;
+        phase += PHASE_PRECISION;
     }
 
     voice->osc[oscIndex].phase = phase;
 }
 
-void oscillator_generate_impulse(voice_entry* voice, uint16_t period,
+void oscillator_generate_impulse(voice_entry* voice, uint32_t period,
                                  uint16_t amplitude, int oscIndex) {
-    uint16_t phase = voice->osc[oscIndex].phase;
+    uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         if (phase >= period)
@@ -153,15 +156,15 @@ void oscillator_generate_impulse(voice_entry* voice, uint16_t period,
         else
             voice->samples[i] += -((int16_t) amplitude);
 
-        phase++;
+        phase += PHASE_PRECISION;
     }
 
     voice->osc[oscIndex].phase = phase;
 }
 
-void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
+void oscillator_generate_triangle(voice_entry* voice, uint32_t period,
                                   uint16_t amplitude, int oscIndex) {
-    uint16_t phase = voice->osc[oscIndex].phase;
+    uint32_t phase = voice->osc[oscIndex].phase;
 
     // HACK. Lazy way to make the oscillator start at 0
     phase += period / 4;
@@ -178,7 +181,7 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
                 (period - phase) * 2 * amplitude / (period / 2) - amplitude;
         }
 
-        phase++;
+        phase += PHASE_PRECISION;
     }
 
     phase -= period / 4;
@@ -188,8 +191,8 @@ void oscillator_generate_triangle(voice_entry* voice, uint16_t period,
 
 void oscillator_generate(voice_entry* voice, int oscIndex) {
     uint16_t note = voice->note + current_settings.osc[oscIndex].tune;
-    uint16_t period = base_periods[note % 12];
-    period >>= note / 12;
+    uint32_t period = base_periods[note % 12];
+    period >>= note / 12; // Divide by two for each octave
 
     const float shape = current_settings.osc[oscIndex].shape;
     const float amp = current_settings.osc[oscIndex].amplitude;
