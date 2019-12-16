@@ -60,6 +60,7 @@
 #include "modules/synthesizer.h"
 #include "modules/voice_scheduler.h"
 #include "modules/midi.h"
+#include "modules/controls.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -227,6 +228,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
+  controls_init();
   note_source_init();
   gui_init();
   synthesizer_init();

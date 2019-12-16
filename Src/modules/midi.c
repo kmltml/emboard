@@ -3,7 +3,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "controls.h"
 #include "note_source.h"
+#include "structures.h"
 
 #define MIDI_CMD_TYPE_MASK 0xf0
 
@@ -23,6 +25,20 @@ static size_t bufferIndex = 0;
 TaskHandle_t midi_task_handle;
 
 QueueHandle_t midi_bytes;
+
+#define LOWEST_CTRL_NUMBER 0x10
+#define CTRL_COUNT 16
+
+static control* ctrl_assignments[CTRL_COUNT] = {
+    &controls.osc[0].shape, &controls.osc[0].amplitude,
+    &controls.osc[0].tune,  &controls.osc[0].velocity_response,
+
+    &controls.osc[1].shape, &controls.osc[1].amplitude,
+    &controls.osc[1].tune,  &controls.osc[1].velocity_response,
+
+    &controls.env.attack,   &controls.env.decay,
+    &controls.env.sustain,  &controls.env.release,
+};
 
 // Return data byte count for the midi command byte.
 // Returns 0 if this command is to be ignored.
@@ -53,6 +69,19 @@ void handleMessage(uint8_t command, uint8_t* data) {
             ev.type = data[1] != 0 ? NE_DOWN : NE_UP;
             xQueueSend(note_events, &ev, portMAX_DELAY);
             break;
+    case MIDI_CMD_CTRL_CHANGE: {
+            uint8_t n = data[0];
+            if (n >= LOWEST_CTRL_NUMBER &&
+                n < LOWEST_CTRL_NUMBER + CTRL_COUNT) {
+                control* ctrl = ctrl_assignments[n - LOWEST_CTRL_NUMBER];
+                if (ctrl != NULL) {
+                    *ctrl->value =
+                        controlPositionToValue(ctrl, (float) data[1] / 127.0);
+                    ctrl->dirty = true;
+                }
+            }
+            break;
+    }
     }
 }
 
@@ -63,7 +92,7 @@ void receiveByte() {
 
 void byteReceived() {
     uint8_t byte = dataBuffer[bufferIndex];
-    if(byte == 0xfe) {
+    if (byte == 0xfe) {
         return;
     }
     printf("%02x\n", byte);
@@ -89,7 +118,8 @@ void byteReceived() {
 void midiIRQ() {
     BaseType_t higherPriorityTaskWoken = pdFALSE;
 
-    xQueueSendFromISR(midi_bytes, &huart6.Instance->RDR, &higherPriorityTaskWoken);
+    xQueueSendFromISR(midi_bytes, &huart6.Instance->RDR,
+                      &higherPriorityTaskWoken);
 
     if (higherPriorityTaskWoken) {
         portYIELD_FROM_ISR(higherPriorityTaskWoken);

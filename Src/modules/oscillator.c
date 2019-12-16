@@ -67,7 +67,7 @@ void oscillator_generate_sine(voice_entry* voice, uint32_t T,
     uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        if (phase >= T)
+        while (phase >= T)
             phase -= T;
 
         // Initialize x:
@@ -113,7 +113,7 @@ void oscillator_generate_square(voice_entry* voice, uint32_t period,
     uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        if (phase >= period)
+        while (phase >= period)
             phase -= period;
 
         if (phase < period / 2)
@@ -132,7 +132,7 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
     uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        if (phase >= period)
+        while (phase >= period)
             phase -= period;
 
         voice->samples[i] += 2 * amplitude * phase / period;
@@ -148,7 +148,7 @@ void oscillator_generate_impulse(voice_entry* voice, uint32_t period,
     uint32_t phase = voice->osc[oscIndex].phase;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        if (phase >= period)
+        while (phase >= period)
             phase -= period;
 
         if (phase < period / 10)
@@ -170,7 +170,7 @@ void oscillator_generate_triangle(voice_entry* voice, uint32_t period,
     phase += period / 4;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        if (phase >= period)
+        while (phase >= period)
             phase -= period;
 
         if (phase <= period / 2) {
@@ -197,7 +197,8 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
     const float shape = current_settings.osc[oscIndex].shape;
     const float amp = current_settings.osc[oscIndex].amplitude;
     const float resp = current_settings.osc[oscIndex].velocity_response;
-    const uint16_t amplitude = 0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
+    const uint16_t amplitude =
+        0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
 
     switch ((uint16_t)(shape + 0.5f)) {
         case 0:

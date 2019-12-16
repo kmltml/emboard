@@ -1,12 +1,13 @@
-#include "gui.h"
-#include "gui/keyboard.h"
-#include "synthesizer.h"
-
 #include <stdbool.h>
 
 #include "cmsis_os.h"
 #include "stm32746g_discovery_lcd.h"
 #include "stm32746g_discovery_ts.h"
+
+#include "controls.h"
+#include "gui.h"
+#include "gui/keyboard.h"
+#include "synthesizer.h"
 
 // clang-format off
 #define SLIDER_DISTANCE          110
@@ -47,10 +48,7 @@ typedef struct Rect {
 typedef struct Slider {
     uint16_t posX;
 
-    float min;
-    float max;
-    float* value;
-    float step;
+    control* ctrl;
     bool mutable;
     char* label;
 } Slider;
@@ -92,10 +90,9 @@ void waitUntilTouchStops(TS_StateTypeDef* touchScreenState);
 // Slider calculations:
 float sliderPositionToValue(const Slider* slider, uint16_t posY);
 uint16_t sliderValueToPosition(const Slider* slider);
-float clampf(float min, float x, float max);
 
 // Math utils:
-uint16_t round_to_uint16(float f);
+static uint16_t round_to_uint16(float f);
 
 void gui_init() {
     // Initialize LCD:
@@ -119,31 +116,19 @@ static Slider oscSliders[OSCILLATOR_COUNT][4];
 void initOscillatorPanel(ConfigPanel* panel, int oscIndex, uint8_t yOffset) {
     Slider* sliders = oscSliders[oscIndex];
     sliders[0].posX = 40;
-    sliders[0].min = 0.1f;
-    sliders[0].max = 4.1f;
-    sliders[0].step = 1.0f;
-    sliders[0].value = &current_settings.osc[oscIndex].shape;
+    sliders[0].ctrl = &controls.osc[oscIndex].shape;
     sliders[0].label = "shape";
 
     sliders[1].posX = sliders[0].posX + SLIDER_DISTANCE;
-    sliders[1].min = 0.0f;
-    sliders[1].max = 1.0f;
-    sliders[1].step = 0.05f;
-    sliders[1].value = &current_settings.osc[oscIndex].amplitude;
+    sliders[1].ctrl = &controls.osc[oscIndex].amplitude;
     sliders[1].label = "amplitude";
 
     sliders[2].posX = sliders[1].posX + SLIDER_DISTANCE;
-    sliders[2].min = -12.0f;
-    sliders[2].max = 12.0f;
-    sliders[2].step = 1.0f;
-    sliders[2].value = &current_settings.osc[oscIndex].tune;
+    sliders[2].ctrl = &controls.osc[oscIndex].tune;
     sliders[2].label = "pitch";
 
     sliders[3].posX = sliders[2].posX + SLIDER_DISTANCE;
-    sliders[3].min = 0.0f;
-    sliders[3].max = 1.0f;
-    sliders[3].step = 0.05f;
-    sliders[3].value = &current_settings.osc[oscIndex].velocity_response;
+    sliders[3].ctrl = &controls.osc[oscIndex].velocity_response;
     sliders[3].label = "vel resp";
 
     panel->bounds.x = 20;
@@ -158,42 +143,36 @@ void initOscillatorPanel(ConfigPanel* panel, int oscIndex, uint8_t yOffset) {
 static Slider envelopeSliders[4];
 
 void initEnvelopePanel(ConfigPanel* envelopePanel) {
-    envelopeSliders[0] = (Slider){.posX = 40,
-                                  .min = 0.0,
-                                  .max = 2.0,
-                                  .value = &current_settings.env.attack_time,
-                                  .step = 0.1,
+    envelopeSliders[0] = (Slider){
+        .posX = 40,
+        .ctrl = &controls.env.attack,
                                   .mutable = true,
-                                  .label = "A"};
-    envelopeSliders[1] =
-        (Slider){.posX = envelopeSliders[0].posX + SLIDER_DISTANCE,
-                 .min = 0.0,
-                 .max = 2.0,
-                 .value = &current_settings.env.decay_time,
-                 .step = 0.1,
+        .label = "A",
+    };
+    envelopeSliders[1] = (Slider){
+        .posX = envelopeSliders[0].posX + SLIDER_DISTANCE,
+        .ctrl = &controls.env.decay,
                  .mutable = true,
-                 .label = "D"};
-    envelopeSliders[2] =
-        (Slider){.posX = envelopeSliders[1].posX + SLIDER_DISTANCE,
-                 .min = 0.0,
-                 .max = 1.0,
-                 .value = &current_settings.env.sustain_level,
-                 .step = 0.1,
+        .label = "D",
+    };
+    envelopeSliders[2] = (Slider){
+        .posX = envelopeSliders[1].posX + SLIDER_DISTANCE,
+        .ctrl = &controls.env.sustain,
                  .mutable = true,
-                 .label = "S"};
-    envelopeSliders[3] =
-        (Slider){.posX = envelopeSliders[2].posX + SLIDER_DISTANCE,
-                 .min = 0.0,
-                 .max = 5.0,
-                 .value = &current_settings.env.release_time,
-                 .step = 0.1,
+        .label = "S",
+    };
+    envelopeSliders[3] = (Slider){
+        .posX = envelopeSliders[2].posX + SLIDER_DISTANCE,
+        .ctrl = &controls.env.release,
                  .mutable = true,
-                 .label = "R"};
+        .label = "R",
+    };
     *envelopePanel = (ConfigPanel){
         .bounds = {.x = 180, .y = 20, .w = 140, .h = 80},
         .sliders = envelopeSliders,
         .sliderCount = sizeof(envelopeSliders) / sizeof(envelopeSliders[0]),
-        .highlightedSlider = SELECTION_NONE};
+        .highlightedSlider = SELECTION_NONE,
+    };
 }
 
 void gui_task(void* args) {
@@ -249,6 +228,15 @@ void viewMainScreen(MainScreen* screen) {
                     waitUntilTouchStops(&touchScreenState);
                 }
             }
+            for (int i = 0; i < screen->panelCount; i++) {
+                ConfigPanel* panel = &screen->panels[i];
+                for (size_t j = 0; j < panel->sliderCount; j++) {
+                    if (panel->sliders[j].ctrl->dirty) {
+                        panel->sliders[j].ctrl->dirty = false;
+                        drawMiniSlider(panel, j);
+                    }
+                }
+            }
         }
     }
 }
@@ -282,10 +270,16 @@ void viewPanelScreen(ConfigPanel* panel) {
                 if (selectedSlider != SELECTION_NONE) {
                     Slider* slider = &panel->sliders[selectedSlider];
                     float newValue = sliderPositionToValue(slider, touchY);
-                    *(slider->value) = newValue;
+                    *(slider->ctrl->value) = newValue;
                 }
 
                 drawSlider(panel, panel->highlightedSlider);
+            }
+            for (int i = 0; i < panel->sliderCount; i++) {
+                if (panel->sliders[i].ctrl->dirty) {
+                    panel->sliders[i].ctrl->dirty = false;
+                    drawSlider(panel, i);
+                }
             }
         }
     }
@@ -475,6 +469,16 @@ void drawMiniSlider(const ConfigPanel* panel, uint8_t sliderId) {
     }
     radius = round_to_uint16(scaleR * radius);
 
+    BSP_LCD_SetTextColor(COLOR_BG);
+    BSP_LCD_FillRect(
+        round_to_uint16(bounds->x +
+                        scaleX * (slider->posX - SLIDER_BG_WIDTH / 2)),
+        round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y -
+                        scaleY * SLIDER_RADIUS_ACTIVE),
+                     round_to_uint16(scaleX * SLIDER_BG_WIDTH),
+        round_to_uint16(scaleY * (SLIDER_HEIGHT + 2 * SLIDER_RADIUS_ACTIVE) +
+                        1));
+
     // Draw bar:
     BSP_LCD_SetTextColor(primaryColor);
     BSP_LCD_FillRect(round_to_uint16(bounds->x + scaleX * slider->posX -
@@ -530,25 +534,16 @@ uint8_t resolveSelectedSlider(const ConfigPanel* panel, uint16_t touchX,
 }
 
 float sliderPositionToValue(const Slider* slider, uint16_t posY) {
-    float value = slider->max - (posY - SLIDER_POS_MIN_Y) *
-                                    (slider->max - slider->min) / SLIDER_HEIGHT;
-    value =
-        slider->min + round_to_uint16((value - slider->min) / slider->step) *
-                          slider->step; //?
-    return clampf(slider->min, value, slider->max);
+    return controlPositionToValue(
+        slider->ctrl, 1.0 - (float) (posY - SLIDER_POS_MIN_Y) / SLIDER_HEIGHT);
 }
 
 uint16_t sliderValueToPosition(const Slider* slider) {
-    return (uint16_t)(SLIDER_POS_MIN_Y + SLIDER_HEIGHT *
-                                             (slider->max - *(slider->value)) /
-                                             (slider->max - slider->min));
+    return SLIDER_POS_MIN_Y +
+           SLIDER_HEIGHT * (1.0 - controlValueToPosition(slider->ctrl));
 }
 
-float clampf(float min, float x, float max) {
-    return (x < min) ? min : ((x > max) ? max : x);
-}
-
-uint16_t round_to_uint16(float f) {
+static uint16_t round_to_uint16(float f) {
     if (f < 0.0f)
         return 0;
 
