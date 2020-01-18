@@ -12,7 +12,7 @@
    height="10.067832cm"
    viewBox="0 0 35219.043 19025.824"
    id="svg5755"
-   sodipodi:docname="midi-receiver-schematic2.svg"
+   sodipodi:docname="midi-receiver-schematic.svg"
    inkscape:version="0.92.4 5da689c313, 2019-01-14">
   <metadata
      id="metadata5761">
@@ -35,15 +35,15 @@
      objecttolerance="10"
      gridtolerance="10"
      guidetolerance="10"
-     inkscape:pageopacity="0"
+     inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:window-width="2516"
      inkscape:window-height="1080"
      id="namedview5757"
      showgrid="false"
      inkscape:zoom="1.5722902"
-     inkscape:cx="585.65239"
-     inkscape:cy="209.46217"
+     inkscape:cx="392.93987"
+     inkscape:cy="210.09818"
      inkscape:window-x="44"
      inkscape:window-y="0"
      inkscape:window-maximized="1"

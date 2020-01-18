@@ -1,0 +1,16 @@
+graph LR
+    midi(MIDI port)
+    gui(GUI)
+    notes[Note events]
+    sched(Voice Scheduler)
+    table[Voice Table]
+    settings[Settings]    
+    synth(Synthesizer)
+
+    gui --> notes
+    gui --- settings
+    midi --> notes
+    notes --> sched
+    sched --- table
+    table --- synth
+    settings --> synth

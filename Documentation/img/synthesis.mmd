@@ -1,0 +1,12 @@
+graph LR
+    osc1(Oscillator 1)
+    osc2(Oscillator 2)
+    oscMix((+))
+    env(Envelope)
+    mix(Mixer)
+    out(Sound Output)
+    osc1 ==> oscMix
+    osc2 ==> oscMix
+    oscMix ==> env
+    env ==> mix
+    mix --> out
