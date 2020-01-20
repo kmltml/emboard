@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+#define MIN_IMPULSE_DURATION 0.1f
+#define MAX_IMPULSE_DURATION 0.5f
+
 #define SINE_ARG_PREC ((uint32_t) 8)
 #define SINE_VAL_PREC ((uint32_t) 8)
 
@@ -106,23 +109,6 @@ void oscillator_generate_sine(voice_entry* voice, uint32_t T,
     }
 }
 
-void oscillator_generate_square(voice_entry* voice, uint32_t period,
-                                uint16_t amplitude, int oscIndex) {
-    uint32_t phase = voice->osc[oscIndex].phase;
-
-    for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        while (phase >= period)
-            phase -= period;
-
-        if (phase < period / 2)
-            voice->samples[i] += -((int16_t) amplitude);
-        else
-            voice->samples[i] += amplitude;
-
-        phase += PHASE_PRECISION;
-    }
-}
-
 void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
                                   uint16_t amplitude, int oscIndex) {
     uint32_t phase = voice->osc[oscIndex].phase;
@@ -137,15 +123,17 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
     }
 }
 
-void oscillator_generate_impulse(voice_entry* voice, uint32_t period,
-                                 uint16_t amplitude, int oscIndex) {
+void oscillator_generate_square(voice_entry* voice, uint32_t period, uint16_t amplitude, int oscIndex, float shape) {
     uint32_t phase = voice->osc[oscIndex].phase;
+
+    const float fraction = MIN_IMPULSE_DURATION + shape * (MAX_IMPULSE_DURATION - MIN_IMPULSE_DURATION);
+    const uint32_t IMPULSE_DURATION = (uint32_t)(fraction * period + 0.5f);
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         while (phase >= period)
             phase -= period;
 
-        if (phase < period / 10)
+        if (phase < IMPULSE_DURATION)
             voice->samples[i] += amplitude;
         else
             voice->samples[i] += -((int16_t) amplitude);
@@ -189,11 +177,11 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
         0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
 
     switch ((uint16_t)(shape)) {
-        case 0:
-            oscillator_generate_impulse(voice, period, amplitude, oscIndex);
+        case 0: //impulse-square
+            oscillator_generate_square(voice, period, amplitude, oscIndex, shape);
             break;
-        case 1:
-            oscillator_generate_square(voice, period, amplitude, oscIndex);
+        case 1: //square
+            oscillator_generate_square(voice, period, amplitude, oscIndex, 1.0f);
             break;
         case 2:
             oscillator_generate_sawtooth(voice, period, amplitude, oscIndex);
