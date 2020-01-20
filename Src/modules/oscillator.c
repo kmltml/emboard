@@ -109,7 +109,9 @@ void oscillator_generate_sine(voice_entry* voice, uint32_t T,
     }
 }
 
-void oscillator_generate_triangle_like(voice_entry* voice, uint32_t period, uint16_t amplitude, int oscIndex, float inclination) {
+void oscillator_generate_triangle_like(voice_entry* voice, uint32_t period,
+                                       uint16_t amplitude, int oscIndex,
+                                       float inclination) {
     uint32_t phase = voice->osc[oscIndex].phase;
 
     const uint32_t midpoint = (uint32_t)(0.5f * (2.0f - inclination) * period);
@@ -124,23 +126,28 @@ void oscillator_generate_triangle_like(voice_entry* voice, uint32_t period, uint
         if (phase <= midpoint)
             voice->samples[i] += 2 * amplitude * phase / midpoint - amplitude;
         else
-            voice->samples[i] += 2 * amplitude * (period - phase) / (period - midpoint) - amplitude;
+            voice->samples[i] +=
+                2 * amplitude * (period - phase) / (period - midpoint) -
+                amplitude;
 
         phase += PHASE_PRECISION;
     }
 }
 
-void oscillator_generate_square(voice_entry* voice, uint32_t period, uint16_t amplitude, int oscIndex, float shape) {
+void oscillator_generate_square(voice_entry* voice, uint32_t period,
+                                uint16_t amplitude, int oscIndex, float shape) {
     uint32_t phase = voice->osc[oscIndex].phase;
 
-    const float fraction = MIN_IMPULSE_DURATION + shape * (MAX_IMPULSE_DURATION - MIN_IMPULSE_DURATION);
-    const uint32_t IMPULSE_DURATION = (uint32_t)(fraction * period + 0.5f);
+    const float fraction =
+        MIN_IMPULSE_DURATION +
+        shape * (MAX_IMPULSE_DURATION - MIN_IMPULSE_DURATION);
+    const uint32_t impulse_duration = (uint32_t)(fraction * period + 0.5f);
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         while (phase >= period)
             phase -= period;
 
-        if (phase < IMPULSE_DURATION)
+        if (phase < impulse_duration)
             voice->samples[i] += amplitude;
         else
             voice->samples[i] += -((int16_t) amplitude);
@@ -161,27 +168,32 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
         0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
 
     switch ((uint16_t)(shape)) {
-        case 0: //impulse-square
-            oscillator_generate_square(voice, period, amplitude, oscIndex, shape);
+        case 0: // impulse-square
+            oscillator_generate_square(voice, period, amplitude, oscIndex,
+                                       shape);
             break;
-        case 1: //square-sawtooth (no interpolation)
-            oscillator_generate_square(voice, period, amplitude, oscIndex, 1.0f);
+        case 1: // square-sawtooth (no interpolation)
+            oscillator_generate_square(voice, period, amplitude, oscIndex,
+                                       1.0f);
             break;
-        case 2: //sawtooth-triangle
-            oscillator_generate_triangle_like(voice, period, amplitude, oscIndex, shape - 2.0f);
+        case 2: // sawtooth-triangle
+            oscillator_generate_triangle_like(voice, period, amplitude,
+                                              oscIndex, shape - 2.0f);
             break;
         case 3: { // triangle-sine
             uint16_t sine_amplitude = (uint16_t)(amplitude * (shape - 3.0f));
-            oscillator_generate_triangle_like(voice, period, amplitude - sine_amplitude, oscIndex, 1.0f);
+            oscillator_generate_triangle_like(
+                voice, period, amplitude - sine_amplitude, oscIndex, 1.0f);
             oscillator_generate_sine(voice, period, sine_amplitude, oscIndex);
             break;
         }
-        case 4: //sine
+        case 4: // sine
         default:
             oscillator_generate_sine(voice, period, amplitude, oscIndex);
             break;
     }
 
     uint32_t old_phase = voice->osc[oscIndex].phase;
-    voice->osc[oscIndex].phase = (old_phase + VOICE_BUFFER_SIZE * PHASE_PRECISION) % period;
+    voice->osc[oscIndex].phase =
+        (old_phase + VOICE_BUFFER_SIZE * PHASE_PRECISION) % period;
 }

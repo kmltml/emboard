@@ -146,25 +146,25 @@ void initEnvelopePanel(ConfigPanel* envelopePanel) {
     envelopeSliders[0] = (Slider){
         .posX = 40,
         .ctrl = &controls.env.attack,
-                                  .mutable = true,
+        .mutable = true,
         .label = "A",
     };
     envelopeSliders[1] = (Slider){
         .posX = envelopeSliders[0].posX + SLIDER_DISTANCE,
         .ctrl = &controls.env.decay,
-                 .mutable = true,
+        .mutable = true,
         .label = "D",
     };
     envelopeSliders[2] = (Slider){
         .posX = envelopeSliders[1].posX + SLIDER_DISTANCE,
         .ctrl = &controls.env.sustain,
-                 .mutable = true,
+        .mutable = true,
         .label = "S",
     };
     envelopeSliders[3] = (Slider){
         .posX = envelopeSliders[2].posX + SLIDER_DISTANCE,
         .ctrl = &controls.env.release,
-                 .mutable = true,
+        .mutable = true,
         .label = "R",
     };
     *envelopePanel = (ConfigPanel){
@@ -475,7 +475,7 @@ void drawMiniSlider(const ConfigPanel* panel, uint8_t sliderId) {
                         scaleX * (slider->posX - SLIDER_BG_WIDTH / 2)),
         round_to_uint16(bounds->y + scaleY * SLIDER_POS_MIN_Y -
                         scaleY * SLIDER_RADIUS_ACTIVE),
-                     round_to_uint16(scaleX * SLIDER_BG_WIDTH),
+        round_to_uint16(scaleX * SLIDER_BG_WIDTH),
         round_to_uint16(scaleY * (SLIDER_HEIGHT + 2 * SLIDER_RADIUS_ACTIVE) +
                         1));
 

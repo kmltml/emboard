@@ -69,7 +69,7 @@ void handleMessage(uint8_t command, uint8_t* data) {
             ev.type = data[1] != 0 ? NE_DOWN : NE_UP;
             xQueueSend(note_events, &ev, portMAX_DELAY);
             break;
-    case MIDI_CMD_CTRL_CHANGE: {
+        case MIDI_CMD_CTRL_CHANGE: {
             uint8_t n = data[0];
             if (n >= LOWEST_CTRL_NUMBER &&
                 n < LOWEST_CTRL_NUMBER + CTRL_COUNT) {
@@ -81,7 +81,7 @@ void handleMessage(uint8_t command, uint8_t* data) {
                 }
             }
             break;
-    }
+        }
     }
 }
 
