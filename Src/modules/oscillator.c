@@ -104,8 +104,6 @@ void oscillator_generate_sine(voice_entry* voice, uint32_t T,
 
         phase += PHASE_PRECISION;
     }
-
-    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_square(voice_entry* voice, uint32_t period,
@@ -123,8 +121,6 @@ void oscillator_generate_square(voice_entry* voice, uint32_t period,
 
         phase += PHASE_PRECISION;
     }
-
-    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
@@ -139,8 +135,6 @@ void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
 
         phase += PHASE_PRECISION;
     }
-
-    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_impulse(voice_entry* voice, uint32_t period,
@@ -158,8 +152,6 @@ void oscillator_generate_impulse(voice_entry* voice, uint32_t period,
 
         phase += PHASE_PRECISION;
     }
-
-    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate_triangle(voice_entry* voice, uint32_t period,
@@ -183,10 +175,6 @@ void oscillator_generate_triangle(voice_entry* voice, uint32_t period,
 
         phase += PHASE_PRECISION;
     }
-
-    phase -= period / 4;
-
-    voice->osc[oscIndex].phase = phase;
 }
 
 void oscillator_generate(voice_entry* voice, int oscIndex) {
@@ -218,4 +206,7 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
             oscillator_generate_triangle(voice, period, amplitude, oscIndex);
             break;
     }
+
+    uint32_t old_phase = voice->osc[oscIndex].phase;
+    voice->osc[oscIndex].phase = (old_phase + VOICE_BUFFER_SIZE * PHASE_PRECISION) % period;
 }
