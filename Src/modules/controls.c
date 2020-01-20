@@ -7,7 +7,7 @@ static void initOscillator(int oscIndex) {
     osc->shape = (control){
         .min = 0.1f,
         .max = 4.1f,
-        .step = 1.0f,
+        .step = 0.1f,
         .value = &current_settings.osc[oscIndex].shape,
     };
 
