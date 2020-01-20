@@ -188,9 +188,9 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
     const uint16_t amplitude =
         0x1000 * amp * (resp * (voice->velocity - 127) / 127 + 1.0);
 
-    switch ((uint16_t)(shape + 0.5f)) {
+    switch ((uint16_t)(shape)) {
         case 0:
-            oscillator_generate_sine(voice, period, amplitude, oscIndex);
+            oscillator_generate_impulse(voice, period, amplitude, oscIndex);
             break;
         case 1:
             oscillator_generate_square(voice, period, amplitude, oscIndex);
@@ -199,11 +199,11 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
             oscillator_generate_sawtooth(voice, period, amplitude, oscIndex);
             break;
         case 3:
-            oscillator_generate_impulse(voice, period, amplitude, oscIndex);
+            oscillator_generate_triangle(voice, period, amplitude, oscIndex);
             break;
         case 4:
         default:
-            oscillator_generate_triangle(voice, period, amplitude, oscIndex);
+            oscillator_generate_sine(voice, period, amplitude, oscIndex);
             break;
     }
 
