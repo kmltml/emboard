@@ -170,10 +170,13 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
         case 2: //sawtooth-triangle
             oscillator_generate_triangle_like(voice, period, amplitude, oscIndex, shape - 2.0f);
             break;
-        case 3: //triangle
-            oscillator_generate_triangle_like(voice, period, amplitude, oscIndex, 1.0f);
+        case 3: { // triangle-sine
+            uint16_t sine_amplitude = (uint16_t)(amplitude * (shape - 3.0f));
+            oscillator_generate_triangle_like(voice, period, amplitude - sine_amplitude, oscIndex, 1.0f);
+            oscillator_generate_sine(voice, period, sine_amplitude, oscIndex);
             break;
-        case 4:
+        }
+        case 4: //sine
         default:
             oscillator_generate_sine(voice, period, amplitude, oscIndex);
             break;
