@@ -109,15 +109,22 @@ void oscillator_generate_sine(voice_entry* voice, uint32_t T,
     }
 }
 
-void oscillator_generate_sawtooth(voice_entry* voice, uint32_t period,
-                                  uint16_t amplitude, int oscIndex) {
+void oscillator_generate_triangle_like(voice_entry* voice, uint32_t period, uint16_t amplitude, int oscIndex, float inclination) {
     uint32_t phase = voice->osc[oscIndex].phase;
+
+    const uint32_t midpoint = (uint32_t)(0.5f * (2.0f - inclination) * period);
+
+    // HACK. Lazy way to make the oscillator start at 0
+    phase += midpoint / 2;
 
     for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
         while (phase >= period)
             phase -= period;
 
-        voice->samples[i] += 2 * amplitude * phase / period;
+        if (phase <= midpoint)
+            voice->samples[i] += 2 * amplitude * phase / midpoint - amplitude;
+        else
+            voice->samples[i] += 2 * amplitude * (period - phase) / (period - midpoint) - amplitude;
 
         phase += PHASE_PRECISION;
     }
@@ -142,29 +149,6 @@ void oscillator_generate_square(voice_entry* voice, uint32_t period, uint16_t am
     }
 }
 
-void oscillator_generate_triangle(voice_entry* voice, uint32_t period,
-                                  uint16_t amplitude, int oscIndex) {
-    uint32_t phase = voice->osc[oscIndex].phase;
-
-    // HACK. Lazy way to make the oscillator start at 0
-    phase += period / 4;
-
-    for (uint16_t i = 0; i < VOICE_BUFFER_SIZE; ++i) {
-        while (phase >= period)
-            phase -= period;
-
-        if (phase <= period / 2) {
-            voice->samples[i] +=
-                phase * 2 * amplitude / (period / 2) - amplitude;
-        } else {
-            voice->samples[i] +=
-                (period - phase) * 2 * amplitude / (period / 2) - amplitude;
-        }
-
-        phase += PHASE_PRECISION;
-    }
-}
-
 void oscillator_generate(voice_entry* voice, int oscIndex) {
     uint16_t note = voice->note + current_settings.osc[oscIndex].tune;
     uint32_t period = base_periods[note % 12];
@@ -180,14 +164,14 @@ void oscillator_generate(voice_entry* voice, int oscIndex) {
         case 0: //impulse-square
             oscillator_generate_square(voice, period, amplitude, oscIndex, shape);
             break;
-        case 1: //square
+        case 1: //square-sawtooth (no interpolation)
             oscillator_generate_square(voice, period, amplitude, oscIndex, 1.0f);
             break;
-        case 2:
-            oscillator_generate_sawtooth(voice, period, amplitude, oscIndex);
+        case 2: //sawtooth-triangle
+            oscillator_generate_triangle_like(voice, period, amplitude, oscIndex, shape - 2.0f);
             break;
-        case 3:
-            oscillator_generate_triangle(voice, period, amplitude, oscIndex);
+        case 3: //triangle
+            oscillator_generate_triangle_like(voice, period, amplitude, oscIndex, 1.0f);
             break;
         case 4:
         default:
