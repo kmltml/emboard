@@ -339,7 +339,96 @@ behaviour in the dma settings for that channel.
 
 ## GUI
 
-TODO
+The GUI module is responsible for displaying the current configuration on-screen
+and allowing the user to modify the settings and test them out without the use
+of an external MIDI keyboard.
+
+The STM32F746G-DISCO board is equipped with a 480×272 color LCD screen with a
+capacitive multi-touch panel. For the purposes of this project, we used the BSP
+API in order to draw screen elements and handle touch events. As the GUI part
+of our project only plays a supplementary role, we refrained from using any
+advanced GUI libraries, instead opting to provide our own lightweight
+implementation of buttons and sliders, thus eliminating the risk of unnecessary
+memory overhead or performance drop.
+
+In the naming convention we adopted for the purposes of this module, functions
+with names beginning with the `draw` prefix are responsible for drawing GUI
+elements on screen, while functions with names beginning with the `view` prefix
+handle user input and call the appropriate `draw` functions whenever refreshing
+a part of the screen is necessary. All other functions defined in this module
+serve an auxilliary role.
+
+At any given time, the GUI can be in one of two states: it can display the main
+screen or one of the configuration panel screens.
+
+The main purpose of the main screen is navigation - it allows the user to switch
+between different configuration panels by double-tapping one of the miniature
+displays. The main screen is also where the on-screen keyboard is displayed,
+allowing users to quickly test out the settings when they return from one of
+the configuration panels.
+
+```C
+typedef struct ConfigPanel {
+    Rect bounds;
+    Slider* sliders;
+    uint8_t sliderCount;
+    uint8_t highlightedSlider;
+} ConfigPanel;
+```
+
+The configuration panels (`ConfigPanel`) display a set of sliders related to
+a single part of the system - for instance, the envelope submodule or one of the
+oscillators. Each slider is bound to one of the `control` structures as defined
+in `controls.c`. The latest slider tapped by the user is designated as the
+"highlighted" slider and is drawn in a slightly different style to indicate
+that it is active.
+
+```C
+//controls.h
+typedef struct {
+    float min;
+    float max;
+    float step;
+    float* value;
+    bool dirty;
+} control;
+
+//gui.c
+typedef struct Slider {
+    uint16_t posX;
+
+    control* ctrl;
+    bool mutable;
+    char* label;
+} Slider;
+```
+
+The `control` structure defines the properties of a single parameter of the
+system which are logically independent from the display:
+- `min` - defines the minimal valid value for this parameter,
+- `max` - defines the maximal valid value for this parameter,
+- `step` - defines the increment by which the value of this parameter is
+  changed. At any given point, the value should differ from `min` by a multitude
+  of `step`.
+- `value` - pointer to the appropriate system parameter,
+- `dirty` - a boolean flag indicating that the value of this property has been
+  changed and the associated slider must be redrawn.
+
+The `Slider` structure supplements a `control` with data only useful when
+drawing the slider:
+- `posX` - indicates the x position of the slider on the settings panel screen,
+- `label` - defines the description drawn above the slider.
+
+The introduction of a separate `control` structure means that other modules
+(such as the MIDI receiver) can modify the system properties freely without
+unnecessary dependecies on the GUI implementation. At the same time, the `dirty`
+flag allows us to update the display values of the sliders in real time.
+
+Note that unlike the rest of the project, a large part of the calculations
+involved in drawing the GUI elements and handling slider events is performed
+using floating-point arythmetic. As these calculations are only launched when
+new user input is received, their effect on the overall performance of the
+system is negligible.
 
 ## Possible expansions
 
