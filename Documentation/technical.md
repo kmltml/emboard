@@ -100,6 +100,13 @@ Supported MIDI messages:
 
 All other commands are ignored.
 
+MIDI Control change commands go through an additional layer of
+indirection we call _controls_. Controls keep the data about range and
+step of all parameters, so that it is not duplicated in MIDI module
+and in GUI. The midi control value within range 0..127 is translated
+to the floating point range of 0.0..1.0 and then into the appropriate
+range for the control.
+
 ## Voice Table
 
 Voice table is the central data structure of the system. It contains
@@ -333,3 +340,51 @@ behaviour in the dma settings for that channel.
 ## GUI
 
 TODO
+
+## Possible expansions
+
+There are many opportunities for expansion in this project. Here, we
+list just a few possible ideas for anyone that would want to improve
+emboard:
+
+### More synthesis modules
+
+While the current model is a bit simplistic, adding a few simple
+effects to the synthesis pipeline could make it sound a lot more
+sophisticated, and would allow the user to get closer to the sound
+they want to achieve. Some of the possible additions are:
+
+- FIR/IIR filter
+- Delay
+- Reverb
+- Modulation (AM/FM)
+- LFO for volume, pitch etc
+
+### Standard MIDI file playback
+
+As it stands, emboard is pretty useless without an external midi
+instrument. The on-screen keyboard, while functional, is not a viable
+interface for a musician. This would change, if the device could play
+back midi files stored on an SD card, or a usb flash drive. This could
+also make it a great demonstration toy, as it could be left on display
+playing some tune on repeat.
+
+### Persistent presets
+
+When a user finds a sound they like, it would be great if they could
+save it, to recreate it later. This could be achieved with the
+on-board flash memory, or even files on an sd card, which could then
+later be shared with other users. Support for MIDI program change
+messages could also be included, to switch between presets quickly.
+
+## Sources
+
+These are the resources we used during creation of emboard:
+
+- [STM32 Cube MX](https://www.st.com/en/development-tools/stm32cubemx.html)
+- [FreeRTOS documentation](https://www.freertos.org/)
+- [Board and μcontroller Documentation](https://www.st.com/)
+- [MIDI specification](https://www.midi.org/specifications)
+- [GCC](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
+- [OpenOCD](http://openocd.org/)
+- [GNU Emacs](https://www.gnu.org/software/emacs/)
