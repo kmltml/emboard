@@ -57,6 +57,8 @@ settings at runtime using either the touchscreen interface or MIDI controls.
 
 ### Main screen
 
+![Main screen](img/main-screen.png)
+
 The main screen is presented immediately after programming the board. It
 allows you to switch between the configuration panels for different subsystems:
 - the primary oscillator (top left),
@@ -71,6 +73,8 @@ on-screen keyboard, allowing for quick and easy sound testing when modifying the
 settings.
 
 ### Primary oscillator
+
+![Main screen](img/config-panel.png)
 
 The primary oscillator is responsible for the main part of the generated sound,
 including the shape of the generated waveform, its amplitude, and tune.
